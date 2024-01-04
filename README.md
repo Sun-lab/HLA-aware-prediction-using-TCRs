@@ -7,11 +7,9 @@ Use TCR to predict infection history, while conditioning on HLA.
 1. Collect TCR data, HLA data, and CMV infection status.
 
    TCR data (TCRs are already filtered. The kept TCRs should all each appears in at least 7 among the all 666 individuals. There should not be any missing value. ):
-
    [data/Emerson_2017/TCR_data.rds](https://github.com/Sun-lab/conditional_TCR_prediction/blob/main/data/Emerson_2017/TCR_data.rds)
    
    HLA data and CMV data (the rows on the top corresponds to HLAs and the row at the bottom is CMV. NA is missing value.):
-
    [data/DeWitt_2018/HLA_v2_CMV_data.rds](https://github.com/Sun-lab/conditional_TCR_prediction/blob/main/data/DeWitt_2018/HLA_v2_CMV_data.rds)
 
 3. Split the data to training and testing, maybe 4 folds for training and 1 fold for testing.
