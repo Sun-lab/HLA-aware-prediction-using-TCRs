@@ -14,6 +14,8 @@ Use TCR to predict infection history, while conditioning on HLA.
    
    [data/DeWitt_2018/HLA_v2_CMV_data.rds](https://github.com/Sun-lab/conditional_TCR_prediction/blob/main/data/DeWitt_2018/HLA_v2_CMV_data.rds)
 
+   In both files, each column is one of the 666 individual, and the order of the columns is consistent cross the two files.
+   
 3. Split the data to training and testing, maybe 4 folds for training and 1 fold for testing.
    2.1 Just sample 80% of individuals as training samples. sample(666, round(0.8*666)).
 
