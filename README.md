@@ -28,9 +28,9 @@ Use TCR to predict infection history, while conditioning on HLA.
 
 7. Try to borrow information across HLAs to improve the prediction accuracy for a specific HLA.
 
-  - 7.1 Calculate HLA similarity using their pseudo sequence using Blosum62.
+    - 7.1 Calculate HLA similarity using their pseudo sequence using Blosum62.
 
-  - 7.2 Calculate HlA similarity using their associations with TCRs. Need to first predict HLA-TCR associations. Then the data for one HLA is its association with, say 10,000 TCRs.
+    - 7.2 Calculate HlA similarity using their associations with TCRs. Need to first predict HLA-TCR associations. Then the data for one HLA is its association with, say 10,000 TCRs.
 
     Data file of HLA similarity matrices:
 
