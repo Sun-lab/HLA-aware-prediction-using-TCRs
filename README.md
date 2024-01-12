@@ -32,21 +32,21 @@ Use TCR to predict infection history, while conditioning on HLA.
 
   - 7.2 Calculate HlA similarity using their associations with TCRs. Need to first predict HLA-TCR associations. Then the data for one HLA is its association with, say 10,000 TCRs.
 
-  Data file of HLA similarity matrices:
+    Data file of HLA similarity matrices:
 
-  [data/correlation_matrices.rds](https://github.com/Sun-lab/conditional_TCR_prediction/blob/main/data/correlation_matrices.rds)
+    [data/correlation_matrices.rds](https://github.com/Sun-lab/conditional_TCR_prediction/blob/main/data/correlation_matrices.rds)
 
-  This file is a list of four matrices, and we may care about three of them for now. Their names have correspondence as explained below:
+    This file is a list of four matrices, and we may care about three of them for now. Their names have correspondence as explained below:
 
-  "aa" -> "AA" in Fi. 6(B) in the grant -> similarity computed purely based on amino acids in HLA pseudo sequences
+    "aa" -> "AA" in Fi. 6(B) in the grant -> similarity computed purely based on amino acids in HLA pseudo sequences
 
-  "cmv_10000" -> "CMV" in Fig. 6(A) in the grant -> similarity computed as the correlation of prediction cores given by DePTH model (a model predicting the association of TCR and HLA given their amino acid sequences) between HLA and top CMV associated TCRs
+    "cmv_10000" -> "CMV" in Fig. 6(A) in the grant -> similarity computed as the correlation of prediction cores given by DePTH model (a model predicting the association of TCR and HLA given their amino acid sequences) between HLA and top CMV associated TCRs
 
-  "covid_29593" -> SARS-COV-2 in Fig. 6(A, B) in the grant -> similarity computed as the correlation of prediction cores given by DePTH model (a model predicting the association of TCR and HLA given their amino acid sequences) between HLA and covid associated TCRs
+    "covid_29593" -> SARS-COV-2 in Fig. 6(A, B) in the grant -> similarity computed as the correlation of prediction cores given by DePTH model (a model predicting the association of TCR and HLA given their amino acid sequences) between HLA and covid associated TCRs
 
-  For each matrix, the row names give the corresponding HLA. The column names are not specified, but they follow the same order as the row names.
+    For each matrix, the row names give the corresponding HLA. The column names are not specified, but they follow the same order as the row names.
 
-  One way of getting a distance matrix is to do 1-similarity matrix
+    One way of getting a distance matrix is to do 1-similarity matrix
 
 
 Try to reproduce the Figure 7 in the grant.
