@@ -28,9 +28,10 @@ Use TCR to predict infection history, while conditioning on HLA.
 
 6. Try to borrow information across HLAs to improve the prediction accuracy for a specific HLA.
 
-    - 6.1 Calculate HLA similarity using their pseudo sequence using Blosum62.
+    - 6.1 Conduct herarchical clustering of HLAs using aa distance of cmv_10000 distance. Cut the tree at certain distance to select small clusters of HLAs.
+    - 6.2 For each cluster, try to take the union of the samples who have any of those HLA alleles in the clsuter, and make prediction for them.
 
-    - 6.2 Calculate HlA similarity using their associations with TCRs. Need to first predict HLA-TCR associations. Then the data for one HLA is its association with, say 10,000 TCRs.
+7. When we want to improve the prediction for one HLA, we may find a few neighboring HLA to help. When we build the model, we may give different weights for different HLAs. For example, if we are intersted in HLA_1, and we got two neighbors: HLA_2 and HLA_3, with similarity 0.8 and 0.6. Then we may take the sampels with any of the three HLAs, but give them diffrent weights. For example, weight 1 for HLA_1, 0.8^2 and 0.6^2 for the two other HLA. We can think about what is the optimal weights here, or what is the optimal transformation weight = f(similarity) where f should be a monontone function. 
 
     Data file of HLA similarity matrices:
 
