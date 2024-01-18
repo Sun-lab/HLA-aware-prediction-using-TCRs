@@ -47,7 +47,7 @@ Use TCR to predict infection history, while conditioning on HLA.
     For each matrix, the row names give the corresponding HLA. The column names are not specified, but they follow the same order as the row names.
 
     One way of getting a distance matrix is to do 1-similarity matrix:
-   ```dist1 = as.dist(1 - cor_lor); h1 = hclust(d=dist1)```
+   ```dist1 = as.dist(1 - similarity_matrix); h1 = hclust(d=dist1)```
 
 
 
