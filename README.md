@@ -25,11 +25,14 @@ Use TCR to predict infection history, while conditioning on HLA.
 4. Select the TCRs with p-values (from training data) smaller than a threshold, and use the total numbers of such TCRs to predict CMV status in both training and test data. Evaluate the prediction using AUC. We have the data of y_i = CMV status of individual i, x_i = # of TCRs of individual i that are associated CMV at a particular p-value cutoff, x_i/d_i, where d_i is the total number of TCRs of individual i.
 
 5. For conditional analysis. Just use those individuals with certain HLA to conduct the above analysis.
+   - 5.1 We need to repeat the split of training/testing for each HLA multiple times, to record the mean and sd of AUC. 
 
 6. Try to borrow information across HLAs to improve the prediction accuracy for a specific HLA.
 
     - 6.1 Conduct herarchical clustering of HLAs using aa distance of cmv_10000 distance. Cut the tree at certain distance to select small clusters of HLAs.
     - 6.2 For each cluster, try to take the union of the samples who have any of those HLA alleles in the clsuter, and make prediction for them.
+    - 6.3 To compare the results of HLA clusters, we can first compare with the results of individual HLA (using the results of 5.1). We should also compare with the results using all HLAs. In this case, we can just train 20 models for all HLAs. Then when we want to evaluate one cluster, we can use part of the testing data that are individuals who have any HLA in the cluster. Therefore, we do not need to retrain the model of all HLAs for each HLA cluster. 
+    - 6.4 Repeat the analysis for aa distance. 
 
 7. When we want to improve the prediction for one HLA, we may find a few neighboring HLA to help. When we build the model, we may give different weights for different HLAs. For example, if we are intersted in HLA_1, and we got two neighbors: HLA_2 and HLA_3, with similarity 0.8 and 0.6. Then we may take the sampels with any of the three HLAs, but give them diffrent weights. For example, weight 1 for HLA_1, 0.8^2 and 0.6^2 for the two other HLA. We can think about what is the optimal weights here, or what is the optimal transformation weight = f(similarity) where f should be a monontone function. 
 
