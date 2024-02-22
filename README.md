@@ -4,37 +4,33 @@ Use TCR to predict infection history, while conditioning on HLA.
 
 ## To-dos
 
+1. Illustration that borrow information could help. We can just use the aa distance for now. 
+
+    - Conduct herarchical clustering of HLAs. For each HLA, we have three sets of results. (1) the results of HLA-specific prediction. (2) The results for this HLA using the model trained for the HLA cluster to which this HLA belongs. (3) The results for this HLA using the model trained by all HLAs. For (2), we just evaluate the model using part of testing data: the individuals who have the HLA of interest. For (3), we can train 20 models for all HLAs with 20 random splits of training/testing data. Then when we want to evaluate one HLA, we can use the individuals in the testing data who have the HLA of interest. Therefore, we do not need to retrain the model of all HLAs for each HLA cluster. 
+
+2. Instead of clustering, we can find the neighbors for each HLA, using a distance cutoff. Then we try to make prediction by borrowing information across HLAs. We may give different weights for different HLAs. For example, if we are intersted in HLA_1, and we got two neighbors: HLA_2 and HLA_3, with similarity 0.8 and 0.6. Then we may take the sampels with any of the three HLAs, but give them diffrent weights. For example, weight 1 for HLA_1, 0.8^2 and 0.6^2 for the two other HLA. We can think about what is the optimal weights here, or what is the optimal transformation weight = f(similarity) where f should be a monontone function.
+
+   - We can use weights to find TCR-CMV associations by a logistic regression, where can supply the weight for each observation. When using logistic regression, we need to use LRT to obtain p-value because the data are highly sparse and the default Wald test has inflated type I error.
+   - If we define y = 1 or 0 for the appearance of a TCR, and x = 1 or 0 for the case/control status (CMV or not), rd is the total number of TCRs per sample. 
+   - model 0: y ~ log(rd)
+   - model 1: y ~ log(rd) + x
+   - anova(m0, m1, test = "LRT"). 
+
+   
+## Finished
+
 1. Collect TCR data, HLA data, and CMV infection status.
 
-   TCR data (TCRs are already filtered. The kept TCRs should all each appears in at least 7 among the all 666 individuals. There should not be any missing value. ):
+   TCR data: [data/Emerson_2017/TCR_data.rds](https://github.com/Sun-lab/conditional_TCR_prediction/blob/main/data/Emerson_2017/TCR_data.rds)
 
-   [data/Emerson_2017/TCR_data.rds](https://github.com/Sun-lab/conditional_TCR_prediction/blob/main/data/Emerson_2017/TCR_data.rds)
-
-   HLA data and CMV data (the rows on the top corresponds to HLAs and the row at the bottom is CMV. NA is missing value.):
-
-   [data/DeWitt_2018/HLA_v2_CMV_data.rds](https://github.com/Sun-lab/conditional_TCR_prediction/blob/main/data/DeWitt_2018/HLA_v2_CMV_data.rds)
+   HLA data and CMV data: (the row at the bottom is CMV. NA is missing value.)[data/DeWitt_2018/HLA_v2_CMV_data.rds](https://github.com/Sun-lab/conditional_TCR_prediction/blob/main/data/DeWitt_2018/HLA_v2_CMV_data.rds)
 
    In both files, each column is one of the 666 individual, and the order of the columns is consistent cross the two files.
 
-2. Split the data to training and testing, maybe 4 folds for training and 1 fold for testing.
-   2.1 Just sample 80% of individuals as training samples. sample(666, round(0.8*666)).
+2. We want to use the total numbers of CMV-associted TCRs to predict CMV status. Evaluate the prediction using AUC in testing data. We have the data of y_i = CMV status of individual i, x_i = # of TCRs of individual i that are associated CMV at a particular p-value cutoff, x_i/d_i, where d_i is the total number of TCRs of individual i.
 
-3. In the training data
-   3.1 Assess the association between TCRs and CMV status, using Fisher's exact test. We may only use the TCRs appear in at least 5 or 7 individuals.
+3. For conditional analysis. Just use those individuals with certain HLA to conduct the above analysis.
 
-4. Select the TCRs with p-values (from training data) smaller than a threshold, and use the total numbers of such TCRs to predict CMV status in both training and test data. Evaluate the prediction using AUC. We have the data of y_i = CMV status of individual i, x_i = # of TCRs of individual i that are associated CMV at a particular p-value cutoff, x_i/d_i, where d_i is the total number of TCRs of individual i.
-
-5. For conditional analysis. Just use those individuals with certain HLA to conduct the above analysis.
-   - 5.1 We need to repeat the split of training/testing for each HLA multiple times, to record the mean and sd of AUC. 
-
-6. Try to borrow information across HLAs to improve the prediction accuracy for a specific HLA.
-
-    - 6.1 Conduct herarchical clustering of HLAs using aa distance of cmv_10000 distance. Cut the tree at certain distance to select small clusters of HLAs.
-    - 6.2 For each cluster, take the union of the samples who have any of those HLA alleles in the clsuter, and make prediction for them.
-    - 6.3 To compare the results (AUC for predicting CMV using TCR). For each HLA, we have three sets of results. (1) the results of HLA-specific prediction (using the results of 5.1). (2) The results for this HLA using the model trained for the HLA cluster to which this HLA belongs. (3) The results for this HLA using the model trained by all HLAs. For (2), we just evaluate the model using part of testing data: the individuals who have the HLA of interest. For (3), we can train 20 models for all HLAs with 20 random splits of training/testing data. Then when we want to evaluate one HLA, we can use the individuals in the testing data who have the HLA of interest. Therefore, we do not need to retrain the model of all HLAs for each HLA cluster. 
-    - 6.4 Repeat the analysis for aa distance. 
-
-7. When we want to improve the prediction for one HLA, we may find a few neighboring HLA to help. When we build the model, we may give different weights for different HLAs. For example, if we are intersted in HLA_1, and we got two neighbors: HLA_2 and HLA_3, with similarity 0.8 and 0.6. Then we may take the sampels with any of the three HLAs, but give them diffrent weights. For example, weight 1 for HLA_1, 0.8^2 and 0.6^2 for the two other HLA. We can think about what is the optimal weights here, or what is the optimal transformation weight = f(similarity) where f should be a monontone function. 
 
     Data file of HLA similarity matrices:
 
