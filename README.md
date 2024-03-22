@@ -14,7 +14,11 @@ Use TCR to predict infection history, while conditioning on HLA.
    - If we define y = 1 or 0 for the appearance of a TCR, and x = 1 or 0 for the case/control status (CMV or not), rd is the total number of TCRs per sample. 
    - model 0: y ~ log(rd)
    - model 1: y ~ log(rd) + x
-   - anova(m0, m1, test = "LRT"). 
+   - anova(m0, m1, test = "LRT").
+  
+3. Examine some examples where clustering has much better results than weighted or the other way around.
+   - Check whether the results become consistent when we use the same train/test split, 500 training and 164 for testing.
+   - Compare resutls for each HLA for 4 methods. model trained using all individuals, only individual with this HLA, clustering and k-nearest neighbors. 
 
    
 ## Finished
