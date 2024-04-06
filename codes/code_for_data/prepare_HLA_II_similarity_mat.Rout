@@ -1,0 +1,95 @@
+
+R version 4.2.3 (2023-03-15) -- "Shortstop Beagle"
+Copyright (C) 2023 The R Foundation for Statistical Computing
+Platform: x86_64-apple-darwin17.0 (64-bit)
+
+R is free software and comes with ABSOLUTELY NO WARRANTY.
+You are welcome to redistribute it under certain conditions.
+Type 'license()' or 'licence()' for distribution details.
+
+  Natural language support but running in an English locale
+
+R is a collaborative project with many contributors.
+Type 'contributors()' for more information and
+'citation()' on how to cite R or R packages in publications.
+
+Type 'demo()' for some demos, 'help()' for on-line help, or
+'help.start()' for an HTML browser interface to help.
+Type 'q()' to quit R.
+
+> 
+> 
+> HLA_filepath = "../../data/HLA_II_pseudo_45.csv"
+> df_HLA = read.csv(HLA_filepath, header = TRUE)
+> dim(df_HLA)
+[1] 250   2
+> head(df_HLA)
+                   hla                                           seq
+1 HLA-DPAB*01:03_01:01 YAFFMGQAFSEGGAILNNNTLQYGQFEYFPAYDIEKAVRVHLDVT
+2 HLA-DPAB*01:03_02:01 YAFFMGQAFSEGGAILNNNTLQFGQFEYFPDYDIEEAVRMHLGMT
+3 HLA-DPAB*01:03_03:01 YAFFMGQAFSEGGAILNNNTLQYLQFEYFPDYDLEKAVRVHLDVT
+4 HLA-DPAB*01:03_04:01 YAFFMGQAFSEGGAILNNNTLQFGQFEYFPAYDIEKAVRMHLGMT
+5 HLA-DPAB*01:03_04:02 YAFFMGQAFSEGGAILNNNTLQFGQFEYFPDYDIEKAVRMHLGMT
+6 HLA-DPAB*01:03_05:01 YAFFMGQAFSEGGAILNNNTLQFGQFEYFPEYDIEKAVRMHLDVT
+> 
+> df_blosum62_X_score = 
++   read.csv("../../data/blosum62_X_seq_align_score_HLA_II.csv", header = TRUE)
+> dim(df_blosum62_X_score)    
+[1] 250 250
+> df_blosum62_X_score[1:6, 1:6]
+  HLA.DPAB.01.03_01.01 HLA.DPAB.01.03_02.01 HLA.DPAB.01.03_03.01
+1                  238                  211                  220
+2                  211                  241                  207
+3                  220                  207                  238
+4                  221                  229                  203
+5                  215                  237                  211
+6                  226                  222                  217
+  HLA.DPAB.01.03_04.01 HLA.DPAB.01.03_04.02 HLA.DPAB.01.03_05.01
+1                  221                  215                  226
+2                  229                  237                  222
+3                  203                  211                  217
+4                  239                  233                  223
+5                  233                  241                  226
+6                  223                  226                  239
+> 
+> # the column order of HLA matches that from HLA pseudo sequence file
+> simi_mat_blosum62_X = matrix(NA, ncol = nrow(df_HLA)[1], nrow = nrow(df_HLA)[1])
+> 
+> for (i in 1:nrow(df_blosum62_X_score)){
++   for (j in 1:nrow(df_blosum62_X_score)){
++     simi_mat_blosum62_X[i, j] = 
++       df_blosum62_X_score[i,j]/sqrt(df_blosum62_X_score[i,i]*df_blosum62_X_score[j,j])
++   }
++ }
+> 
+> summary(c(simi_mat_blosum62_X))
+   Min. 1st Qu.  Median    Mean 3rd Qu.    Max. 
+0.08368 0.26948 0.49379 0.50524 0.72146 1.00000 
+> 
+> rownames(simi_mat_blosum62_X) = df_HLA$hla
+> 
+> saveRDS(simi_mat_blosum62_X, 
++         file = "../../data/HLA_II_similarity_matrix_aa.rds")
+> 
+> 
+> sessionInfo()
+R version 4.2.3 (2023-03-15)
+Platform: x86_64-apple-darwin17.0 (64-bit)
+Running under: macOS Big Sur ... 10.16
+
+Matrix products: default
+BLAS:   /Library/Frameworks/R.framework/Versions/4.2/Resources/lib/libRblas.0.dylib
+LAPACK: /Library/Frameworks/R.framework/Versions/4.2/Resources/lib/libRlapack.dylib
+
+locale:
+[1] en_US.UTF-8/en_US.UTF-8/en_US.UTF-8/C/en_US.UTF-8/en_US.UTF-8
+
+attached base packages:
+[1] stats     graphics  grDevices utils     datasets  methods   base     
+
+loaded via a namespace (and not attached):
+[1] compiler_4.2.3
+> q(save="no")
+> proc.time()
+   user  system elapsed 
+  1.497   0.049   1.672 
