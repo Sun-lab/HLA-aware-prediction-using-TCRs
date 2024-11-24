@@ -11,7 +11,23 @@ This directoy contains the source code file to train and make predictions for th
 ### Codes/HLA_CMV_association
 This directoy contains the source code file to compute the association result of each HLA with CMV. 
 
-### Codes/HLA_agnostic_model
+### Codes/HLA_agnostic_model/HLA_agnostic_base.py
+This directoy contains the source code file to train and make predictions for the HLA-agnostic model in the paper. The performance of the model is evaluated on all the test individuals.
+
+### Codes/HLA_agnostic_model/HLA_agnostic_specific.py
+This directoy contains the source code file to train and make predictions for the HLA-agnostic model in the paper. The performance of the model is evaluated on subsets of test individuals that contains a specific HLA.
+
+### Codes/HLA_specific_model/
+This directoy contains the source code file to train and make predictions for the HLA-specific model in the paper.
+
+### Codes/code_for_data/
+This directoy contains the source code file to pre-process the data files.
+
+### Codes/intermediate_files
+This directory contains the files that are needed during computations.
+
+### Codes/prepare_similarity_mat
+This directory contains the files that prepares the similarity matrix which is needed for KNN method.
 
 
 
