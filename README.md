@@ -2,6 +2,19 @@
 
 Use TCR to predict infection history, while conditioning on HLA.
 
+## Codes
+The directory contains all the source code files to obatin the computational results.
+
+### Codes/Combined_HLA_model
+This directoy contains the source code file to train and make predictions for the Combined Model in the paper.
+
+### Codes/HLA_CMV_association
+This directoy contains the source code file to compute the association result of each HLA with CMV. 
+
+### Codes/HLA_agnostic_model
+
+
+
 ## Details for class II HLA allele similarity
 
 The HLA class II allele similarity matrix is uploaded to github as the file:
