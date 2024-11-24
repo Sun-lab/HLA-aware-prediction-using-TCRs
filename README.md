@@ -29,6 +29,9 @@ This directory contains the files that are needed during computations.
 ### Codes/prepare_similarity_mat
 This directory contains the files that prepares the similarity matrix which is needed for KNN method.
 
+## Data
+Required data files.
+
 ## Plots
 The directory contains all the source code files to generate the plots in the paper. The sub-directory names correspond to each specific plots.
 
