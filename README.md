@@ -11,7 +11,7 @@ This repo contains the source code files that are associated with the paper [Exp
 For details of how the models are trained and evaluated, please refer to the paper's method section.
 
 # Requirements
-There is no specific hardware requirements to excute the scripts, the Python codes were developed under Python 3.10.12. 
+There is no specific hardware requirements to excute all the scripts, Python scripts were developed under Python 3.10.12. 
 
 ## Codes
 The directory contains all the source code files to obtain the computational results.
