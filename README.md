@@ -1,5 +1,5 @@
 # TCR-based Infection Prediction by Conditioning on HLA
-This repo contains the source code files that are associated with the paper Exploration of the Roles of HLAs When Predicting Infection Status by T Cell Receptors with link: https://www.biorxiv.org/content/10.1101/2024.11.18.624054v1
+This repo contains the source code files that are associated with the paper [Exploration of the Roles of HLAs When Predicting Infection Status by T Cell Receptors](https://www.biorxiv.org/content/10.1101/2024.11.18.624054v1)
 
 Use TCR to predict infection history, while conditioning on HLA.
 
