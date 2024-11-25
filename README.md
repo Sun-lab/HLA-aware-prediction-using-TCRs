@@ -13,8 +13,13 @@ For details of how the models are trained and evaluated, please refer to the pap
 # Requirements
 There is no specific hardware requirements to excute all the scripts, Python scripts were developed under Python 3.10.12. For Python package versions please see requirements.txt. 
 
+# Directory Introduction
+
 ## Codes
 The directory contains all the source code files to obtain the computational results.
+
+### Codes/code_for_data/
+This directoy contains the source code file to pre-process the data files. Ensure all files are executed here before proceeding.
 
 ### Codes/Combined_HLA_model
 This directoy contains the source code file to train and make predictions for the Combined Model in the paper.
@@ -31,8 +36,7 @@ This directoy contains the source code file to train and make predictions for th
 ### Codes/HLA_specific_model/
 This directoy contains the source code file to train and make predictions for the HLA-specific model in the paper.
 
-### Codes/code_for_data/
-This directoy contains the source code file to pre-process the data files.
+
 
 ### Codes/intermediate_files
 This directory contains the files that are needed during computations.
