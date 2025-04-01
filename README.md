@@ -1,12 +1,16 @@
 # TCR-based Infection Prediction by Conditioning on HLA
-This repo contains the source code files that are associated with the paper [Exploration of the Roles of HLAs When Predicting Infection Status by T Cell Receptors](https://www.biorxiv.org/content/10.1101/2024.11.18.624054v1). T cells are critical components of human immune system. When a cell is infected by a virus, it presents viral peptides on its surface using human leukocyte antigen (HLA) proteins. These peptide-HLA complexes are recognized by T cells through interactions with T cell receptors (TCRs). A human blood sample can contain millions of unique TCRs, which is a sample from the TCR repertoire of the individual. TCR repertoire-wide association studies (TReWAS) aim to evaluate the association between individual TCRs and disease or exposure status. Previous studies have demonstrated that TCRs associated with viral infections can be identified through TReWAS, and such TCRs can be used to predict current or past infection with high accuracy. Notably, many TCRs are strongly associated with specific HLA alleles, suggesting that incorporating HLA information could enhance the accuracy of TReWAS analyses and TCR-based predictions. In our study, we evaluated TCR-based predictions by conditioning on individual HLA alleles or their k-nearest neighbors. We observed improved prediction accuracy for certain HLA alleles. Furthermore, these HLA-specific predictions provide insights into the role of specific HLAs in the infection or disease of interest, offering potential applications in personalized medicine.
+This repository contains the source code associated with the paper, [Exploration of the Roles of HLAs When Predicting Infection Status by T Cell Receptors](https://www.biorxiv.org/content/10.1101/2024.11.18.624054v1).
+
+A T cell can recognize some specific peptide-HLA complexes presented on cell surfaces by its T cell receptor (TCR). A blood sample can contain millions of unique TCRs, representing a snapshot of an individual’s TCR repertoire. TCR repertoire-wide association studies (TReWAS) aim to identify associations between individual TCRs and disease or exposure status. Prior research has shown that TCRs linked to viral infections can be discovered through TReWAS, and such TCRs can accurately predict current or past infections. Many of these TCRs are strongly associated with specific HLA alleles, suggesting that incorporating HLA information may enhance both TReWAS analyses and TCR-based predictions.
+
+In our study, we evaluated TCR-based predictions while conditioning on individual HLA alleles or their k-nearest neighbors. We observed improved prediction accuracy for som HLA alleles. These HLA-specific predictions offer insights into the role of particular HLAs in infection or disease, with potential applications in personalized medicine.
 
 # Terminology
-**HLA-agonistic Model**: The model trained using all individuals regardless of the HLA decomposition of each training individual.
+A **HLA-agonistic Model** was trained using all individuals regardless of their HLA alleles. 
 
-**HLA-specific Model**: The model trained using only the individuals that carry a specific HLA allele. Each model correspondes to a specific allele.
+A **HLA-specific Model** for an HLA allele was trained using the individuals that carry a specific HLA allele. 
 
-**Combined Model**: The model trained by combininig the significant TCRs identified by the HLA-agonistic model and the HLA-specific model.
+A **Combined Model** for an HLA allele was trained by combininig the TCRs identified by the HLA-agonistic model and the HLA-specific model.
 
 For details of how the models are trained and evaluated, please refer to the paper's method section.
 
@@ -16,26 +20,14 @@ There is no specific hardware requirements to excute all the scripts, Python scr
 # Directory Introduction
 
 ## Codes
-The directory contains all the source code files to obtain the computational results.
+The directory contains all the source codes to obtain the computational results, including codes to pre-process the data files (```code_for_data```), codes for ```HLA_specific_model```, ```HLA_agnostic_model```, and ```Combined_HLA_model```. The folder ```HLA_CMV_association``` saves the source dodes to compute the association result of each HLA with CMV. 
 
-### Codes/code_for_data/
-This directoy contains the source code file to pre-process the data files. Ensure all files are executed here before proceeding.
-
-### Codes/Combined_HLA_model
-This directoy contains the source code file to train and make predictions for the Combined Model in the paper.
-
-### Codes/HLA_CMV_association
-This directoy contains the source code file to compute the association result of each HLA with CMV. 
 
 ### Codes/HLA_agnostic_model/HLA_agnostic_base.py
 This directoy contains the source code file to train and make predictions for the HLA-agnostic model in the paper. The performance of the model is evaluated on all the test individuals.
 
 ### Codes/HLA_agnostic_model/HLA_agnostic_specific.py
 This directoy contains the source code file to train and make predictions for the HLA-agnostic model in the paper. The performance of the model is evaluated on subsets of test individuals that contains a specific HLA.
-
-### Codes/HLA_specific_model/
-This directoy contains the source code file to train and make predictions for the HLA-specific model in the paper.
-
 
 
 ### Codes/intermediate_files
