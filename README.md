@@ -20,21 +20,7 @@ There is no specific hardware requirements to excute all the scripts, Python scr
 # Directory Introduction
 
 ## Codes
-The directory contains all the source codes to obtain the computational results, including codes to pre-process the data files (```code_for_data```), codes for ```HLA_specific_model```, ```HLA_agnostic_model```, and ```Combined_HLA_model```. The folder ```HLA_CMV_association``` saves the source dodes to compute the association result of each HLA with CMV. 
-
-
-### Codes/HLA_agnostic_model/HLA_agnostic_base.py
-This directoy contains the source code file to train and make predictions for the HLA-agnostic model in the paper. The performance of the model is evaluated on all the test individuals.
-
-### Codes/HLA_agnostic_model/HLA_agnostic_specific.py
-This directoy contains the source code file to train and make predictions for the HLA-agnostic model in the paper. The performance of the model is evaluated on subsets of test individuals that contains a specific HLA.
-
-
-### Codes/intermediate_files
-This directory contains the files that are needed during computations.
-
-### Codes/prepare_similarity_mat
-This directory contains the files that prepares the similarity matrix which is needed for KNN method.
+The directory contains all the source codes to obtain the computational results, including codes to pre-process the data files (```code_for_data```), codes for ```HLA_specific_model```, ```HLA_agnostic_model```, and ```Combined_HLA_model```. The folder ```HLA_CMV_association``` saves the source dodes to compute the association result of each HLA with CMV. ```intermediate_files``` saves the intermediate files needed during computations. ```prepare_similarity_mat``` contains the files that prepares the similarity matrix which is needed for KNN method.
 
 ## Data
 Required data files.
