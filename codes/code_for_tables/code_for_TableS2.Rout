@@ -1,0 +1,250 @@
+
+R version 4.4.0 (2024-04-24) -- "Puppy Cup"
+Copyright (C) 2024 The R Foundation for Statistical Computing
+Platform: x86_64-pc-linux-gnu
+
+R is free software and comes with ABSOLUTELY NO WARRANTY.
+You are welcome to redistribute it under certain conditions.
+Type 'license()' or 'licence()' for distribution details.
+
+  Natural language support but running in an English locale
+
+R is a collaborative project with many contributors.
+Type 'contributors()' for more information and
+'citation()' on how to cite R or R packages in publications.
+
+Type 'demo()' for some demos, 'help()' for on-line help, or
+'help.start()' for an HTML browser interface to help.
+Type 'q()' to quit R.
+
+> 
+> library(readxl)
+> 
+> df_table_i = read_excel("../result_tables/Table_S1.xlsx", sheet = "HLA I")
+> df_table_i = as.data.frame(df_table_i)
+> head(df_table_i)
+          HLA agnostic_AUC specific_AUC combined_AUC   knn_AUC
+1 HLA-A*01:01    0.9545455    0.9265734    0.9615385 0.9335664
+2 HLA-A*02:01    0.9435484    0.7127016    0.9052419 0.8054435
+3 HLA-A*03:01    0.9259259    0.6888889    0.8814815 0.7481481
+4 HLA-A*11:01    0.9100860    0.4033896    0.9037368 0.3884777
+5 HLA-A*24:02    0.9181818    0.7545455    0.9363636 0.7545455
+6 HLA-A*26:01    0.9647392    0.5309524    0.9647392 0.7778912
+  specific_training_size knn_training_size nTCR_agnostic nTCR_specific
+1              147.00000         147.00000      280.0000    52.0000000
+2              196.00000         207.00000      280.0000    68.0000000
+3              119.00000         120.00000      280.0000    28.0000000
+4               42.66667          44.88889      360.7778     0.7777778
+5              102.00000         124.00000      280.0000    14.0000000
+6               33.71429          55.28571      335.2857     0.5714286
+   nTCR_knn nTCR_both_agnostic_specific nTCR_agnostic_not_specific
+1 247.00000                          22                   258.0000
+2 483.00000                          25                   255.0000
+3 208.00000                           5                   275.0000
+4  86.88889                           0                   360.7778
+5 250.00000                           4                   276.0000
+6 100.42857                           0                   335.2857
+  nTCR_specific_not_agnostic prop_as_by_a prop_as_by_s nTCR_both_agnostic_knn
+1                 30.0000000   0.07857143    0.4230769             37.0000000
+2                 43.0000000   0.08928571    0.3676471             55.0000000
+3                 23.0000000   0.01785714    0.1785714             12.0000000
+4                  0.7777778   0.00000000    0.0000000              0.3333333
+5                 10.0000000   0.01428571    0.2857143             13.0000000
+6                  0.5714286   0.00000000    0.0000000              3.1428571
+  nTCR_agnostic_not_knn nTCR_knn_not_agnostic prop_ak_by_a prop_ak_by_k
+1              243.0000             210.00000 0.1321428571  0.149797571
+2              225.0000             428.00000 0.1964285714  0.113871636
+3              268.0000             196.00000 0.0428571429  0.057692308
+4              360.4444              86.55556 0.0009992613  0.007193507
+5              267.0000             237.00000 0.0464285714  0.052000000
+6              332.1429              97.28571 0.0094551296  0.031090967
+  HLA_name HLA_group HLA_frequency run_10splits CMV_asso_pvalue
+1  A*01:01         A           182        FALSE      0.07459532
+2  A*02:01         A           259        FALSE      0.80446006
+3  A*03:01         A           143        FALSE      0.38664346
+4  A*11:01         A            54         TRUE      0.88617785
+5  A*24:02         A           123        FALSE      0.61169374
+6  A*26:01         A            43         TRUE      0.34205622
+> 
+> df_table_ii = read_excel("../result_tables/Table_S1.xlsx", sheet = "HLA II")
+> df_table_ii = as.data.frame(df_table_ii)
+> head(df_table_ii)
+                   HLA agnostic_AUC specific_AUC combined_AUC   knn_AUC
+1 HLA-DPAB*01:03_01:01    0.9344444    0.6312500    0.9588889 0.5469444
+2 HLA-DPAB*01:03_02:01    0.9553571    0.6875000    0.9732143 0.8214286
+3 HLA-DPAB*01:03_03:01    0.9715625    0.4244147    0.9871875 0.4788889
+4 HLA-DPAB*01:03_04:01    0.9107843    0.8607843    0.9196078 0.8558824
+5 HLA-DPAB*01:03_04:02    1.0000000    0.7600000    1.0000000 0.7200000
+6 HLA-DPAB*02:01_04:01    0.8490130    0.4229911    0.8442511 0.9035667
+  specific_training_size knn_training_size nTCR_agnostic nTCR_specific nTCR_knn
+1                   32.6           65.2000      365.8000      4.000000  74.2000
+2                   83.0          334.0000      280.0000      3.000000 640.0000
+3                   39.0           69.0000      350.7500      3.750000  77.7500
+4                  258.0          334.0000      280.0000    141.000000 808.0000
+5                   90.0          334.0000      280.0000     28.000000 730.0000
+6                   41.5          278.1667      354.6667      1.333333 464.8333
+  nTCR_both_agnostic_specific nTCR_agnostic_not_specific
+1                        1.00                   364.8000
+2                        1.00                   279.0000
+3                        0.25                   350.5000
+4                       58.00                   222.0000
+5                        4.00                   276.0000
+6                        0.00                   354.6667
+  nTCR_specific_not_agnostic prop_as_by_a prop_as_by_s nTCR_both_agnostic_knn
+1                   3.000000 0.0025862853   0.18000000                 1.0000
+2                   2.000000 0.0035714286   0.33333333               139.0000
+3                   3.500000 0.0007780284   0.04166667                 5.0000
+4                  83.000000 0.2071428571   0.41134752               146.0000
+5                  24.000000 0.0142857143   0.14285714               142.0000
+6                   1.333333 0.0000000000   0.00000000               112.8333
+  nTCR_agnostic_not_knn nTCR_knn_not_agnostic prop_ak_by_a prop_ak_by_k
+1              364.8000                 73.20  0.002753225   0.01200238
+2              141.0000                501.00  0.496428571   0.21718750
+3              345.7500                 72.75  0.014479642   0.06080125
+4              134.0000                662.00  0.521428571   0.18069307
+5              138.0000                588.00  0.507142857   0.19452055
+6              241.8333                352.00  0.321051316   0.24456651
+          HLA_name HLA_group HLA_frequency run_10splits CMV_asso_pvalue
+1 DPAB*01:03_01:01        DP            41         TRUE     0.620978561
+2 DPAB*01:03_02:01        DP           105        FALSE     0.056282649
+3 DPAB*01:03_03:01        DP            49         TRUE     0.360457086
+4 DPAB*01:03_04:01        DP           322        FALSE     0.339552517
+5 DPAB*01:03_04:02        DP           105        FALSE     0.003384568
+6 DPAB*02:01_04:01        DP            55         TRUE     0.885011847
+> 
+> df_hla_i_names = read.csv("../intermediate_files/HLA_I_names.csv", header=TRUE)
+> df_hla_ii_names = read.csv("../intermediate_files/HLA_II_names.csv", header=TRUE)
+> 
+> df_hla_i_index = read.csv("../intermediate_files/HLA_I_index.csv", header=FALSE)
+> df_hla_ii_index = read.csv("../intermediate_files/HLA_II_index.csv", header=FALSE)
+> 
+> hla_i_dir = "../HLA_specific_model_HLA_I/results/permutation_aucs"
+> hla_ii_dir = "../HLA_specific_model_HLA_II/results/permutation_aucs"
+> 
+> six_hla_names = NULL
+> six_pvalues = NULL
+> 
+> hla_i_inds = c(23)
+> 
+> for (hla_i in hla_i_inds){
++   hla_name = df_hla_i_names$x[hla_i+1]
++   real_auc = df_table_i$specific_AUC[which(df_table_i$HLA==hla_name)]
++   
++   permute_aucs = NULL
++   for (j in 0:99){
++     df_j  = read.csv(file.path(hla_i_dir, 
++                                paste0("hla_index_", as.character(hla_i)), 
++                                paste0(as.character(hla_i), "_", as.character(j), "_chunk_res.csv")), 
++                      header=TRUE)
++     permute_aucs = c(permute_aucs, df_j$permutation_auc)
++   }
++   print(real_auc)
++   print(summary(permute_aucs))
++   stopifnot(sum(permute_aucs==-1)==0)
++   pvalue_auc = mean(permute_aucs>=real_auc)
++   print(sum(is.na(permute_aucs)))
++   print(paste0(hla_name, " permutation p-value: ", as.character(pvalue_auc)))
++   
++   six_hla_names = c(six_hla_names, hla_name)
++   six_pvalues = c(six_pvalues, pvalue_auc)
++   
++ }
+[1] 0.9625
+   Min. 1st Qu.  Median    Mean 3rd Qu.    Max. 
+ 0.2250  0.5333  0.6042  0.6050  0.6771  0.9667 
+[1] 0
+[1] "HLA-C*07:02 permutation p-value: 2e-04"
+> 
+> 
+> hla_ii_inds = c(21, 28, 33, 65, 130)
+> 
+> for (hla_ii in hla_ii_inds){
++   hla_name = df_hla_ii_names$x[hla_ii+1]
++   real_auc = df_table_ii$specific_AUC[which(df_table_ii$HLA==hla_name)]
++   
++   permute_aucs = NULL
++   for (j in 0:99){
++     df_j  = read.csv(file.path(hla_ii_dir, 
++                                paste0("hla_index_", as.character(hla_ii)), 
++                                paste0(as.character(hla_ii), "_", as.character(j), "_chunk_res.csv")), 
++                      header=TRUE)
++     permute_aucs = c(permute_aucs, df_j$permutation_auc)
++   }
++   print(real_auc)
++   print(summary(permute_aucs))
++   stopifnot(sum(permute_aucs==-1)==0)
++   pvalue_auc = mean(permute_aucs>=real_auc)
++   print(sum(is.na(permute_aucs)))
++   print(paste0(hla_name, " permutation p-value: ", as.character(pvalue_auc)))
++ 
++   six_hla_names = c(six_hla_names, hla_name)
++   six_pvalues = c(six_pvalues, pvalue_auc)
++   
++ }
+[1] 0.9946524
+   Min. 1st Qu.  Median    Mean 3rd Qu.    Max. 
+ 0.1751  0.4866  0.5615  0.5830  0.6711  0.9492 
+[1] 0
+[1] "HLA-DRB1*07:01 permutation p-value: 0"
+[1] 0.961039
+   Min. 1st Qu.  Median    Mean 3rd Qu.    Max. 
+0.01299 0.41558 0.50649 0.50994 0.59740 0.98701 
+[1] 0
+[1] "HLA-DQAB*01:01_05:01 permutation p-value: 4e-04"
+[1] 0.98
+   Min. 1st Qu.  Median    Mean 3rd Qu.    Max. 
+ 0.0800  0.4800  0.5750  0.5729  0.6700  1.0000 
+[1] 0
+[1] "HLA-DRB1*03:01 permutation p-value: 4e-04"
+[1] 0.9255952
+   Min. 1st Qu.  Median    Mean 3rd Qu.    Max. 
+0.09524 0.46429 0.51786 0.53365 0.60119 0.94048 
+[1] 0
+[1] "HLA-DQAB*02:01_02:02 permutation p-value: 4e-04"
+[1] 0.98
+   Min. 1st Qu.  Median    Mean 3rd Qu.    Max. 
+ 0.0800  0.4800  0.5750  0.5729  0.6700  1.0000 
+[1] 0
+[1] "HLA-DQAB*05:01_02:01 permutation p-value: 4e-04"
+> 
+> df_output = data.frame(hla_name = six_hla_names, 
++                        permutation_pvalue = six_pvalues)
+> 
+> write.csv(df_output, 
++           file = "../result_tables/Table_S2.csv", 
++           row.names=FALSE)
+> 
+> 
+> sessionInfo()
+R version 4.4.0 (2024-04-24)
+Platform: x86_64-pc-linux-gnu
+Running under: Ubuntu 18.04.6 LTS
+
+Matrix products: default
+BLAS/LAPACK: FlexiBLAS OPENBLAS;  LAPACK version 3.11.0
+
+locale:
+ [1] LC_CTYPE=en_US.UTF-8       LC_NUMERIC=C              
+ [3] LC_TIME=en_US.UTF-8        LC_COLLATE=en_US.UTF-8    
+ [5] LC_MONETARY=en_US.UTF-8    LC_MESSAGES=en_US.UTF-8   
+ [7] LC_PAPER=en_US.UTF-8       LC_NAME=C                 
+ [9] LC_ADDRESS=C               LC_TELEPHONE=C            
+[11] LC_MEASUREMENT=en_US.UTF-8 LC_IDENTIFICATION=C       
+
+time zone: America/Los_Angeles
+tzcode source: system (glibc)
+
+attached base packages:
+[1] stats     graphics  grDevices utils     datasets  methods   base     
+
+other attached packages:
+[1] readxl_1.4.5
+
+loaded via a namespace (and not attached):
+ [1] compiler_4.4.0   magrittr_2.0.3   cli_3.6.5        tools_4.4.0     
+ [5] pillar_1.10.2    glue_1.8.0       tibble_3.2.1     cellranger_1.1.0
+ [9] vctrs_0.6.5      lifecycle_1.0.4  pkgconfig_2.0.3  rlang_1.1.6     
+> q(save = "no")
+> proc.time()
+   user  system elapsed 
+  0.920   0.536   2.953 

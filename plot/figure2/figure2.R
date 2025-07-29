@@ -1,14 +1,14 @@
+
 library(ggplot2)
 library(dplyr)
 library(ggrepel)
 library(gridExtra)
 library(grid)
+library(readxl)
 
 
-
-setwd("/home/hyo/mystuff/git_test/conditional_TCR_prediction/plot/figure2/")
-df1 = read.csv("../HLA_I_ready_data.csv")
-df2 = read.csv("../HLA_II_ready_data.csv")
+df1 = read_excel("../../codes/result_tables/Table_S1.xlsx", sheet = "HLA I")
+df2 = read_excel("../../codes/result_tables/Table_S1.xlsx", sheet = "HLA II")
 
 baseline = 0.9163461538461538
 my_colors <- c("#1f77b4", "#ff7f0e", "#2ca02c")
@@ -20,16 +20,28 @@ get_legend <- function(my_plot) {
   return(legend)
 }
 
+df1$size_category = rep("<=70", nrow(df1))
+df1$size_category[which(df1$HLA_frequency>70)] = ">70"
+
+df2$size_category = rep("<=70", nrow(df2))
+df2$size_category[which(df2$HLA_frequency>70)] = ">70"
+
 ## (A)
 
-f1_main = ggplot(df1, aes(x = HLA_ignorant_AUC, y = HLA_specific_AUC, size = Training_Size, color = HLA_group, label = HLA_name)) +
+f1_main = ggplot(df1, aes(x = agnostic_AUC, y = specific_AUC, size = size_category, color = HLA_group, label = HLA_name)) +
   geom_point(alpha = 0.6) +
   geom_abline(intercept = 0, slope = 1, linetype = "dashed", color = "blue") +  
   geom_vline(xintercept = baseline,linetype = "dashed", color = "red") +  
   geom_hline(yintercept = baseline,linetype = "dashed", color = "red") +  
-  scale_color_manual(labels =c("A/DP","B/DQ","C/DR") , values = my_colors) +  
-  scale_size(range = c(4,8), breaks = c(50,100,150))+
+  scale_color_manual(labels =c("A/DP","B/DQ","C/DR") , values = my_colors, name = "group") +  
+  scale_size_manual(
+    name = "Frequency",
+    values = c("<=70" = 2, ">70" = 3),  # adjust sizes as needed
+    labels = c("<=70", ">70")
+  ) + 
   labs(x = "all AUC", y = "specific AUC", size = "train size", title = "HLA-I") +
+  ylim(0.38, 1.02) + 
+  xlim(0.70, 1.02) + 
   theme_minimal()  +
   theme(plot.title = element_text(hjust = 0.5, size = 14, face="bold"),
         axis.title.x = element_blank(),
@@ -42,14 +54,20 @@ f1_main = ggplot(df1, aes(x = HLA_ignorant_AUC, y = HLA_specific_AUC, size = Tra
 
 
 
-f1_main_2 = ggplot(df2, aes(x = HLA_ignorant_AUC, y = HLA_specific_AUC, size = Training_Size, color = HLA_group, label = HLA_name)) +
+f1_main_2 = ggplot(df2, aes(x = agnostic_AUC, y = specific_AUC, size = size_category, color = HLA_group, label = HLA_name)) +
   geom_point(alpha = 0.6, show.legend = T) +
   geom_abline(intercept = 0, slope = 1, linetype = "dashed", color = "blue") +  
   geom_vline(xintercept = baseline,linetype = "dashed", color = "red") +  
   geom_hline(yintercept = baseline,linetype = "dashed", color = "red") +  
   scale_color_manual(values = my_colors) +  
-  scale_size(range = c(4,8), breaks = c(50,100,150))+
+  scale_size_manual(
+    name = "Frequency",
+    values = c("<=70" = 2, ">70" = 3),  # adjust sizes as needed
+    labels = c("<=70", ">70")
+  ) + 
   labs(x = "all AUC", y = "specific AUC", color = "group", size="size", title = "HLA-II") +
+  ylim(0.38, 1.02) + 
+  xlim(0.70, 1.02) + 
   theme_minimal()   +
   theme(plot.title = element_text(hjust = 0.5, size = 14, face="bold"),
         axis.title.x = element_blank(),
@@ -66,6 +84,8 @@ legend2 <- get_legend(f1_main_2)
 f1_main <- f1_main + theme(legend.position = "none")
 f1_main_2 <- f1_main_2 + theme(legend.position = "none")
 
+pdf("figure2_panels/Fig2A.pdf", width = 5.2, height = 3.2)
+
 grid.arrange(
   arrangeGrob(
     f1_main, f1_main_2,
@@ -73,23 +93,30 @@ grid.arrange(
     nrow=2,
     heights = c(35, 4)  # Adjust heights to allocate space for the legend
   ),
-  bottom = textGrob("All model AUC", gp = gpar(fontsize = 10)),
-  left = textGrob("Specific model AUC", rot = 90, gp = gpar(fontsize = 12))
+  bottom = textGrob("HLA-agnostic AUC", gp = gpar(fontsize = 10)),
+  left = textGrob("HLA-specific AUC", rot = 90, gp = gpar(fontsize = 12))
 )
 
+dev.off()
 
 # (B)
-par(mfrow=c(1,2))
-hist(df1$Significant_TCR_prop, main="HLA-I", xlab = "")
-hist(df2$Significant_TCR_prop, main="HLA-II", xlab ="")
 
+pdf("figure2_panels/Fig2B.pdf", width = 6, height = 3)
+par(mfrow=c(1,2))
+hist(df1$prop_as_by_a, xlim = c(0, 0.26), main="HLA-I", xlab="", ylab="") 
+# xlab = "Prop of sign TCRs from HLA-agnostic model\nthat are significant under HLA-specific model")
+hist(df2$prop_as_by_a, xlim = c(0, 0.26), main="HLA-II", xlab="", ylab="") 
+# xlab = "Prop of sign TCRs from HLA-agnostic model\nthat are significant under HLA-specific model")
+dev.off()
 
 # (C) 
 
-i3_p1 = ggplot(df1, aes(x = log(Training_Size), y = log(Significant_TCR_prop*280), color = HLA_group, label = HLA_name)) +
+pdf("figure2_panels/Fig2C.pdf", width = 5.2, height = 3.2)
+
+i3_p1 = ggplot(df1, aes(x = log10(specific_training_size), y = log10(nTCR_specific), color = HLA_group, label = HLA_name)) +
   geom_point(alpha = 0.6, show.legend = T, size=2) +
-  geom_text_repel(data=subset(df1, Significant_TCR_prop*280 >= 60 ), size = 3, vjust = -1, show.legend = FALSE) +  
-  scale_color_manual(values = my_colors) +  
+  geom_text_repel(data=subset(df1, nTCR_specific >= 60 ), size = 3, vjust = -1, show.legend = FALSE) +  
+  scale_color_manual(values = my_colors, name = "group") +  
   scale_size_continuous(range = c(3, 10)) +  
   labs(x = "all AUC", y = "specific AUC", size = "train size", title = "HLA-I") +
   theme_minimal()+
@@ -102,10 +129,10 @@ i3_p1 = ggplot(df1, aes(x = log(Training_Size), y = log(Significant_TCR_prop*280
   guides(color = guide_legend(nrow = 1), 
          size = guide_legend(nrow = 1))
 
-i3_p2 = ggplot(df2, aes(x = log(Training_Size), y = log(Significant_TCR_prop*280), color = HLA_group, label = HLA_name)) +
+i3_p2 = ggplot(df2, aes(x = log10(specific_training_size), y = log10(nTCR_specific), color = HLA_group, label = HLA_name)) +
   geom_point(alpha = 0.6, show.legend = T, size=2) +
-  geom_text_repel(data=subset(df2, Significant_TCR_prop*280 > 60 ),size = 3, vjust = -1, show.legend = FALSE) +  
-  scale_color_manual(values = my_colors) +  
+  geom_text_repel(data=subset(df2, nTCR_specific > 60 ),size = 3, vjust = -1, show.legend = FALSE) +  
+  scale_color_manual(values = my_colors, name = "group") +  
   scale_size_continuous(range = c(3, 10)) +  
   labs(x = "all AUC", y = "specific AUC", size = "train size", title = "HLA-II") +
   theme_minimal()+
@@ -131,7 +158,14 @@ grid.arrange(
     nrow=2,
     heights = c(56, 4)  # Adjust heights to allocate space for the legend
   ),
-  bottom = textGrob("Log10 of Traning Sample Size", gp = gpar(fontsize = 12)),
-  left = textGrob("Log10 of Number of Significant TCRs", rot = 90, gp = gpar(fontsize = 12))
+  bottom = textGrob("log10(training sample size)", gp = gpar(fontsize = 12)),
+  left = textGrob("log10 (# of significant TCRs)", rot = 90, gp = gpar(fontsize = 12))
 )
+
+dev.off()
+
+
+sessionInfo()
+q(save = "no")
+
 

@@ -1,0 +1,253 @@
+
+R version 4.4.0 (2024-04-24) -- "Puppy Cup"
+Copyright (C) 2024 The R Foundation for Statistical Computing
+Platform: x86_64-pc-linux-gnu
+
+R is free software and comes with ABSOLUTELY NO WARRANTY.
+You are welcome to redistribute it under certain conditions.
+Type 'license()' or 'licence()' for distribution details.
+
+  Natural language support but running in an English locale
+
+R is a collaborative project with many contributors.
+Type 'contributors()' for more information and
+'citation()' on how to cite R or R packages in publications.
+
+Type 'demo()' for some demos, 'help()' for on-line help, or
+'help.start()' for an HTML browser interface to help.
+Type 'q()' to quit R.
+
+> library(ggplot2)
+> library(dplyr)
+
+Attaching package: ‘dplyr’
+
+The following objects are masked from ‘package:stats’:
+
+    filter, lag
+
+The following objects are masked from ‘package:base’:
+
+    intersect, setdiff, setequal, union
+
+> library(ggrepel)
+> library(gridExtra)
+
+Attaching package: ‘gridExtra’
+
+The following object is masked from ‘package:dplyr’:
+
+    combine
+
+> library(grid)
+> library(quantreg)
+Loading required package: SparseM
+> library(readxl)
+> 
+> 
+> get_legend <- function(my_plot) {
++   tmp <- ggplot_gtable(ggplot_build(my_plot))
++   leg <- which(sapply(tmp$grobs, function(x) x$name) == "guide-box")
++   legend <- tmp$grobs[[leg]]
++   return(legend)
++ }
+> 
+> df1 = read_excel("../../codes/result_tables/Table_S1.xlsx", sheet = "HLA I")
+> df2 = read_excel("../../codes/result_tables/Table_S1.xlsx", sheet = "HLA II")
+> 
+> baseline = 0.9163461538461538
+> colors_ <- c("#1f77b4", "#ff7f0e", "#2ca02c")
+> 
+> # load the HLA-CMV pvalues
+> df_hla_i_res = read.csv("../../codes/HLA_CMV_association/results/HLA_I_CMV_asso_res.csv", 
++                         header=TRUE)
+> df_hla_ii_res = read.csv("../../codes/HLA_CMV_association/results/HLA_II_CMV_asso_res.csv", 
++                          header=TRUE)
+> 
+> df_hla_names = read.csv("../../codes/intermediate_files/complete_HLA_rownames.csv",
++                         header=TRUE)
+> hla_names = df_hla_names$HLA_name
+> 
+> df_hla_i_res$HLA_name = hla_names[df_hla_i_res$HLA_I_index] 
+> df_hla_ii_res$HLA_name = hla_names[df_hla_ii_res$HLA_II_index] 
+> 
+> df_hla_i_res_matched = df_hla_i_res[match(df1$HLA, df_hla_i_res$HLA_name), ]
+> df_hla_ii_res_matched = df_hla_ii_res[match(df2$HLA, df_hla_ii_res$HLA_name), ]
+> 
+> table(df1$HLA==df_hla_i_res_matched$HLA_name, useNA="ifany")
+
+TRUE 
+  26 
+> table(df2$HLA==df_hla_ii_res_matched$HLA_name, useNA="ifany")
+
+TRUE 
+  22 
+> 
+> df1$HLA_CMV_asso_pval = df_hla_i_res_matched$pvalue
+> df2$HLA_CMV_asso_pval = df_hla_ii_res_matched$pvalue
+> 
+> ########################
+> # Specific-AUC v.s. pval
+> ########################
+> 
+> p1 = ggplot(df1, aes(x = -log10(HLA_CMV_asso_pval) , y = specific_AUC, color = HLA_group, label = HLA_name)) +
++   geom_point(alpha = 0.6, size = 2.5) +
++   geom_hline(yintercept = 0.8, linetype = "dashed", color = "red") +
++   scale_color_manual(values = colors_) +  # Specify the custom color palette+
++   scale_size_continuous(range = c(3, 10)) +  # Adjust the range of point sizes as needed
++   ylim(0.38, 1.02) +
++   theme_minimal()+
++   labs(x = "-log10 of p-values HLA-CMV association ", y = "Specific AUC", title = "HLA-I", color = "Group") +
++   theme(plot.title = element_text(hjust = 0.5, size = 14, face="bold"),
++         axis.title.x = element_blank(),
++         axis.title.y = element_blank(),
++         legend.position = "bottom",
++         legend.box = "horizontal") +
++   guides(color = guide_legend(nrow = 1), 
++          size = guide_legend(nrow = 1))
+> 
+> 
+> p2 = ggplot(df2, aes(x = -log10(HLA_CMV_asso_pval) , y = specific_AUC, color = HLA_group, label = HLA_name)) +
++   geom_point(alpha = 0.6, size = 2.5) +
++   geom_hline(yintercept = 0.8,linetype = "dashed", color = "red") +
++   scale_color_manual(values = colors_) +  # Specify the custom color palette+
++   scale_size_continuous(range = c(3, 10)) +  # Adjust the range of point sizes as needed
++   ylim(0.38, 1.02) +
++   theme_minimal()+
++   labs(x = "-log10 of p-values HLA-CMV association ", y = "Specific AUC", title = "HLA-II", color="Group") +
++   theme(plot.title = element_text(hjust = 0.5, size = 14, face="bold"),
++         axis.title.x = element_blank(),
++         axis.title.y = element_blank(),
++         legend.position = "bottom",
++         legend.box = "horizontal") +
++   guides(color = guide_legend(nrow = 1), 
++          size = guide_legend(nrow = 1))
+> 
+> legend1 <- get_legend(p1)
+> legend2 <- get_legend(p2)
+> 
+> p1 <- p1 + theme(legend.position = "none")
+> p2 <- p2 + theme(legend.position = "none")
+> 
+> pdf("figure4_panels/Fig4A.pdf", width = 4.8, height = 3.2)
+> grid.arrange(
++   arrangeGrob(
++     p1, p2,
++     legend1,legend2,
++     nrow=2,
++     heights = c(56, 4)  # Adjust heights to allocate space for the legend
++     #top = textGrob("HLA-I HLA-II Plots", gp = gpar(fontsize = 14, fontface = "bold"))
++   ),
++   bottom = textGrob("-log10 of p-values HLA-CMV association", gp = gpar(fontsize = 12)),
++   left = textGrob("HLA-specific AUC", rot = 90, gp = gpar(fontsize = 12))
++ )
+> dev.off()
+pdf 
+  2 
+> 
+> #######################
+> ### regression plot ###
+> #######################
+> 
+> # remove an outlier
+> df2 = df2 %>% filter(specific_training_size < 200) 
+> HLAI_fit <- rq(specific_AUC ~ specific_training_size, data = df1, tau = 0.5)
+> HLAII_fit = rq(specific_AUC ~ specific_training_size, data = df2, tau = 0.5)
+> df1$regression_pred = predict(HLAI_fit)
+> df2$regression_pred = predict(HLAII_fit)
+> 
+> 
+> reg1 = ggplot(df1, aes(x = specific_training_size, y = specific_AUC, color = HLA_group)) +
++   geom_point(size=2.5, alpha = 0.6, show.legend = T) +
++   geom_line(aes(y = regression_pred), color = "blue") + # Fitted quantile regression line
++   geom_hline(yintercept = 0.80,linetype = "dashed", color = "red") +
++   scale_color_manual(name = "Group", values = colors_) +
++   ylim(0.38, 1.02) +
++   theme_minimal()+
++   theme(axis.title.x = element_blank(),
++         axis.title.y = element_blank(),
++         legend.position = "bottom",
++         legend.box = "horizontal",
++         legend.spacing.y = unit(0.01, "mm") ) +
++   guides(color = guide_legend(nrow = 1), 
++          size = guide_legend(nrow = 1))
+> 
+> 
+> reg2 = ggplot(df2, aes(x = specific_training_size, y = specific_AUC, color = HLA_group)) +
++   geom_point(size=2.5, alpha = 0.6, show.legend = T) +
++   geom_line(aes(y = regression_pred), color = "blue") + # Fitted quantile regression line
++   geom_hline(yintercept = 0.8,linetype = "dashed", color = "red") +
++   scale_color_manual(name = "Group", values = colors_) +
++   ylim(0.38, 1.02) +
++   theme_minimal()+
++   theme(axis.title.x = element_blank(),
++         axis.title.y = element_blank(),
++         legend.position = "bottom",
++         legend.box = "vertical",
++         legend.spacing.y = unit(0.01, "mm") ) +
++   guides(color = guide_legend(nrow = 1), 
++          size = guide_legend(nrow = 1))
+> 
+> 
+> legend1 <- get_legend(reg1)
+> legend2 <- get_legend(reg2)
+> 
+> reg1 <- reg1 + ggtitle("HLA-I") +  theme(legend.position = "none", plot.title = element_text(size=14, face="bold", hjust = 0.5)) 
+> reg2 <- reg2 +  ggtitle("HLA-II") + theme(legend.position = "none", plot.title = element_text(size=14, face="bold", hjust = 0.5)) 
+> 
+> pdf("figure4_panels/Fig4B.pdf", width = 4.8, height = 3.2)
+> grid.arrange(
++   arrangeGrob(
++     reg1, reg2,
++     legend1,legend2,
++     nrow=2,
++     heights = c(56, 4) # Adjust heights to allocate space for the legend
++   ),
++   bottom = textGrob("Training sample size", gp = gpar(fontsize = 12)),
++   left = textGrob("HLA-specific AUC", rot = 90, gp = gpar(fontsize = 12))
++ )
+> dev.off()
+pdf 
+  2 
+> 
+> 
+> sessionInfo()
+R version 4.4.0 (2024-04-24)
+Platform: x86_64-pc-linux-gnu
+Running under: Ubuntu 18.04.6 LTS
+
+Matrix products: default
+BLAS/LAPACK: FlexiBLAS OPENBLAS;  LAPACK version 3.11.0
+
+locale:
+ [1] LC_CTYPE=en_US.UTF-8       LC_NUMERIC=C              
+ [3] LC_TIME=en_US.UTF-8        LC_COLLATE=en_US.UTF-8    
+ [5] LC_MONETARY=en_US.UTF-8    LC_MESSAGES=en_US.UTF-8   
+ [7] LC_PAPER=en_US.UTF-8       LC_NAME=C                 
+ [9] LC_ADDRESS=C               LC_TELEPHONE=C            
+[11] LC_MEASUREMENT=en_US.UTF-8 LC_IDENTIFICATION=C       
+
+time zone: America/Los_Angeles
+tzcode source: system (glibc)
+
+attached base packages:
+[1] grid      stats     graphics  grDevices utils     datasets  methods  
+[8] base     
+
+other attached packages:
+[1] readxl_1.4.5    quantreg_5.99.1 SparseM_1.84-2  gridExtra_2.3  
+[5] ggrepel_0.9.6   dplyr_1.1.4     ggplot2_3.5.2  
+
+loaded via a namespace (and not attached):
+ [1] vctrs_0.6.5        cli_3.6.5          rlang_1.1.6        MatrixModels_0.5-3
+ [5] generics_0.1.4     labeling_0.4.3     glue_1.8.0         scales_1.4.0      
+ [9] cellranger_1.1.0   tibble_3.2.1       MASS_7.3-61        lifecycle_1.0.4   
+[13] compiler_4.4.0     RColorBrewer_1.1-3 Rcpp_1.0.14        pkgconfig_2.0.3   
+[17] farver_2.1.2       lattice_0.22-6     R6_2.6.1           dichromat_2.0-0.1 
+[21] tidyselect_1.2.1   splines_4.4.0      pillar_1.10.2      magrittr_2.0.3    
+[25] Matrix_1.7-1       tools_4.4.0        withr_3.0.2        gtable_0.3.6      
+[29] survival_3.8-3    
+> q(save = "no")
+> proc.time()
+   user  system elapsed 
+  3.117   0.587   4.739 

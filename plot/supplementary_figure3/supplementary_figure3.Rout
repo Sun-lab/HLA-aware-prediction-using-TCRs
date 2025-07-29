@@ -1,0 +1,159 @@
+
+R version 4.4.0 (2024-04-24) -- "Puppy Cup"
+Copyright (C) 2024 The R Foundation for Statistical Computing
+Platform: x86_64-pc-linux-gnu
+
+R is free software and comes with ABSOLUTELY NO WARRANTY.
+You are welcome to redistribute it under certain conditions.
+Type 'license()' or 'licence()' for distribution details.
+
+  Natural language support but running in an English locale
+
+R is a collaborative project with many contributors.
+Type 'contributors()' for more information and
+'citation()' on how to cite R or R packages in publications.
+
+Type 'demo()' for some demos, 'help()' for on-line help, or
+'help.start()' for an HTML browser interface to help.
+Type 'q()' to quit R.
+
+> library(ggplot2)
+> library(dplyr)
+
+Attaching package: ‘dplyr’
+
+The following objects are masked from ‘package:stats’:
+
+    filter, lag
+
+The following objects are masked from ‘package:base’:
+
+    intersect, setdiff, setequal, union
+
+> library(ggrepel)
+> library(gridExtra)
+
+Attaching package: ‘gridExtra’
+
+The following object is masked from ‘package:dplyr’:
+
+    combine
+
+> library(grid)
+> library(readxl)
+> 
+> df1 = read_excel("../../codes/result_tables/Table_S1.xlsx", sheet = "HLA I")
+> df2 = read_excel("../../codes/result_tables/Table_S1.xlsx", sheet = "HLA II")
+> 
+> df1$size_category = rep("<=70", nrow(df1))
+> df1$size_category[which(df1$HLA_frequency>70)] = ">70"
+> 
+> df2$size_category = rep("<=70", nrow(df2))
+> df2$size_category[which(df2$HLA_frequency>70)] = ">70"
+> 
+> baseline = 0.9163461538461538
+> colors_ <- c("#1f77b4", "#ff7f0e", "#2ca02c")
+> 
+> p1 = ggplot(df1, aes(x = agnostic_AUC, y = knn_AUC, size = size_category, color = HLA_group)) +
++   geom_point(alpha = 0.6, show.legend = T) +
++   scale_size_manual(
++     name = "Freq",
++     values = c("<=70" = 2, ">70" = 3),  # adjust sizes as needed
++     labels = c("<=70", ">70")
++   ) +
++   geom_abline(intercept = 0, slope = 1, linetype = "dashed", color = "blue") + 
++   geom_vline(xintercept = baseline,linetype = "dashed", color = "red") + 
++   geom_hline(yintercept = baseline,linetype = "dashed", color = "red") + 
++   scale_color_manual(labels =c("A/DP","B/DQ","C/DR") , values = colors_, name = "group")+  # Specify the custom color palette+
++   xlab("HLA-agnostic AUC") + 
++   ylab("KNN AUC") + 
++   xlim(0.7, 1.02) + 
++   ylim(0.36, 1.02) +
++   theme_minimal()+
++   ggtitle("HLA-I") + 
++   theme(plot.title = element_text(hjust = 0.5, size = 14),
++         # axis.title.x = element_blank(),
++         # axis.title.y = element_blank(),
++         legend.position = "bottom",
++         legend.box = "horizontal",
++         legend.margin = margin(0, 0, 0, 0),  # trim outer margin
++         legend.spacing.y = unit(0, "mm")) +
++   guides(color = guide_legend(nrow = 1), 
++          size = "none")
+> 
+> p2 = ggplot(df2, aes(x = agnostic_AUC, y = knn_AUC, size = size_category, color = HLA_group)) +
++   geom_point(alpha = 0.6, show.legend = T) +
++   scale_size_manual(
++     name = "Freq",
++     values = c("<=70" = 2, ">70" = 3),  # adjust sizes as needed
++     labels = c("<=70", ">70")
++   ) +
++   geom_abline(intercept = 0, slope = 1, linetype = "dashed", color = "blue") +  
++   geom_vline(xintercept = baseline,linetype = "dashed", color = "red") +  
++   geom_hline(yintercept = baseline,linetype = "dashed", color = "red") +  
++   scale_color_manual(labels =c("A/DP","B/DQ","C/DR") , values = colors_, name = "group") +  # Specify the custom color palette+
++   xlab("HLA-agnostic AUC") + 
++   ylab("KNN AUC") + 
++   xlim(0.7, 1.02) + 
++   ylim(0.36, 1.02) +
++   theme_minimal()+
++   ggtitle("HLA-II") + 
++   theme(plot.title = element_text(hjust = 0.5, size = 14),
++         # axis.title.x = element_blank(),
++         # axis.title.y = element_blank(),
++         legend.position = "bottom",
++         legend.box = "horizontal",
++         legend.margin = margin(0, 0, 0, 0),  # trim outer margin
++         legend.spacing.y = unit(0, "mm") ) +
++   guides(color = "none",
++          size = guide_legend(nrow = 1))
+> 
+> pdf("supplementary_figure3_panels/Supplementary_Fig3.pdf", width = 5.2, height = 3.2)
+> grid.arrange(
++   arrangeGrob(
++     p1, p2,
++     nrow=1
++   )
++ )
+> dev.off()
+null device 
+          1 
+> 
+> 
+> sessionInfo()
+R version 4.4.0 (2024-04-24)
+Platform: x86_64-pc-linux-gnu
+Running under: Ubuntu 18.04.6 LTS
+
+Matrix products: default
+BLAS/LAPACK: FlexiBLAS OPENBLAS;  LAPACK version 3.11.0
+
+locale:
+ [1] LC_CTYPE=en_US.UTF-8       LC_NUMERIC=C              
+ [3] LC_TIME=en_US.UTF-8        LC_COLLATE=en_US.UTF-8    
+ [5] LC_MONETARY=en_US.UTF-8    LC_MESSAGES=en_US.UTF-8   
+ [7] LC_PAPER=en_US.UTF-8       LC_NAME=C                 
+ [9] LC_ADDRESS=C               LC_TELEPHONE=C            
+[11] LC_MEASUREMENT=en_US.UTF-8 LC_IDENTIFICATION=C       
+
+time zone: America/Los_Angeles
+tzcode source: system (glibc)
+
+attached base packages:
+[1] grid      stats     graphics  grDevices utils     datasets  methods  
+[8] base     
+
+other attached packages:
+[1] readxl_1.4.5  gridExtra_2.3 ggrepel_0.9.6 dplyr_1.1.4   ggplot2_3.5.2
+
+loaded via a namespace (and not attached):
+ [1] vctrs_0.6.5        cli_3.6.5          rlang_1.1.6        generics_0.1.4    
+ [5] glue_1.8.0         labeling_0.4.3     scales_1.4.0       cellranger_1.1.0  
+ [9] tibble_3.2.1       lifecycle_1.0.4    compiler_4.4.0     RColorBrewer_1.1-3
+[13] Rcpp_1.0.14        pkgconfig_2.0.3    farver_2.1.2       R6_2.6.1          
+[17] dichromat_2.0-0.1  tidyselect_1.2.1   pillar_1.10.2      magrittr_2.0.3    
+[21] tools_4.4.0        withr_3.0.2        gtable_0.3.6      
+> q(save = "no")
+> proc.time()
+   user  system elapsed 
+  1.646   0.401   2.656 
