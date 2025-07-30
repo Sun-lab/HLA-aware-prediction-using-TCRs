@@ -29,9 +29,3 @@ knn_split,
 	for those HLA with sample size between 40 and 70,
 	it is slow to run
 
-TODO: 
-
-Feng find the code to prepare the data, reduce the size of TCR data. Also the code to calculate the weights for KNN. 
-
-Feng find the mapping of HLA names to HLA index. 
-
