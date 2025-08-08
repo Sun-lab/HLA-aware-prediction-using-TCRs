@@ -21,7 +21,7 @@ def read_in_data(data_path):
     return TCR, CMV, train_index, test_index
 
 
-def get_fisher_data(training_index, TCR):
+def get_fisher_data(training_index, TCR, CMV):
     cardi = len(TCR)
     oneone_vec = np.zeros(cardi)
     onezero_vec = np.zeros(cardi)
@@ -79,42 +79,40 @@ def make_pred(TCR, important_index, test_individuals):
     return prediction_probs
 
 
-def constrained_pred(target_HLA, CMV, test_indexes, pred_probs):
-    test_indexes = np.array(test_indexes)
-    AUC = []
-    for HLA_i in target_HLA:
-        position_index = np.arange( len(HLA[HLA_i][test_indexes]) )
-        HLA_i_test_index = test_indexes[ HLA[HLA_i][test_indexes] != 0 ]
-        position_index_pred = position_index[ HLA[HLA_i][test_indexes] != 0  ]
-        try:
-            Auc_i = metrics.roc_auc_score( CMV[ HLA_i_test_index ], pred_probs[position_index_pred] )
-        except ValueError:
-            Auc_i = -1
-        AUC.append(Auc_i)
-    return np.array(AUC)
-
-
-
-def work_wrapper(TCR, CMV, train_index, test_index, type1_error):
+def work_wrapper(TCR, CMV, train_index, test_index, cutoffs):
     cardi = len(TCR)
-    oneone_vec = np.zeros(cardi)
-    onezero_vec = np.zeros(cardi)
-    zeroone_vec = np.zeros(cardi)
-    zerozero_vec = np.zeros(cardi)
-    oneone_vec, onezero_vec, zeroone_vec, zerozero_vec = get_fisher_data(train_index, TCR)
+    oneone_vec, onezero_vec, zeroone_vec, zerozero_vec = get_fisher_data(train_index, TCR, CMV)
     p_vals = asso_test(oneone_vec, onezero_vec,zeroone_vec, zerozero_vec)
-    significant_TCR_index, signi_TCR_pvals = filter_p_vals(type1_error, p_vals)
-    pred_probs = make_pred(TCR, significant_TCR_index, test_index )
-    Auc = metrics.roc_auc_score( CMV[test_index ], pred_probs )
-    return Auc
+    Aucs = []
+    for cutoff in cutoffs:
+        significant_TCR_index, signi_TCR_pvals = filter_p_vals(cutoff, p_vals)
+        pred_probs = make_pred(TCR, significant_TCR_index, test_index )
+        Auc = metrics.roc_auc_score( CMV[test_index ], pred_probs )
+        Aucs += [Auc]
+    return Aucs, p_vals
 
 
 
 if __name__ == "__main__":
+    
     data_path = "../intermediate_files/"
-    type1_error = 0.001
+    res_path ="./results" 
+    os.makedirs(res_path, exist_ok=True)
+
+    cutoffs = [0.01, 0.001, 0.0001, 0.00001]
     TCR, CMV, train_index, test_index = read_in_data(data_path)
-    res = work_wrapper(TCR, CMV, train_index, test_index, type1_error)
-    print(res)
+    Aucs, p_vals = work_wrapper(TCR, CMV, train_index, test_index, cutoffs)
+
+    pval_filename = os.path.join(res_path, "pvalues.csv")
+
+    df_pval = pd.DataFrame(p_vals.tolist(), 
+                           columns=['pval'])
+    df_pval.to_csv(pval_filename, index=False, na_rep="NA")
 
 
+    auc_filename = os.path.join(res_path, "base_aucs.csv")
+
+    df_auc = pd.DataFrame(list(zip(cutoffs, Aucs)), 
+                          columns=['pval_cutoff', 'AUC'])
+    df_auc.to_csv(auc_filename, index=False, na_rep="NA")
+    

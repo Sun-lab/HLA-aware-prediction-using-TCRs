@@ -1,0 +1,336 @@
+
+R version 4.4.0 (2024-04-24) -- "Puppy Cup"
+Copyright (C) 2024 The R Foundation for Statistical Computing
+Platform: x86_64-pc-linux-gnu
+
+R is free software and comes with ABSOLUTELY NO WARRANTY.
+You are welcome to redistribute it under certain conditions.
+Type 'license()' or 'licence()' for distribution details.
+
+  Natural language support but running in an English locale
+
+R is a collaborative project with many contributors.
+Type 'contributors()' for more information and
+'citation()' on how to cite R or R packages in publications.
+
+Type 'demo()' for some demos, 'help()' for on-line help, or
+'help.start()' for an HTML browser interface to help.
+Type 'q()' to quit R.
+
+> 
+> 
+> HLA_KNN = function(HLA_index, dist_mat, k, HLA, similar_threshold)
++ {
++   test_weights = c(1, sort(dist_mat[HLA_index,], decreasing = T)[2:k])
++   index_to_drop = which(test_weights < similar_threshold)
++   
++   test_weights_index = order(dist_mat[HLA_index,],decreasing = T )[1:k]
++   HLA_at = which(test_weights_index ==  HLA_index)
++   if (HLA_at != 1) {
++     test_weights_index = test_weights_index[-HLA_at]
++     test_weights_index = c(HLA_index, test_weights_index)
++   }
++   
++   neigbhor_names = rownames(dist_mat)[test_weights_index]
++   neigbhor_index_HLA_mat = match(neigbhor_names, row.names(HLA))
++   test_weights[index_to_drop] = NA
++   neigbhor_index_HLA_mat[index_to_drop] =NA
++   
++   return(list(neigbor_weights = test_weights, neigbhor_index = neigbhor_index_HLA_mat  ) )
++ }
+> 
+> 
+> 
+> HLA  = readRDS("../../data/DeWitt_2018/HLA_v2_CMV_data.rds")
+> HLA_no_NA = HLA[ ,!is.na(HLA[216,])]
+> HLA_only = HLA_no_NA[1:215,]
+> CMV = HLA_no_NA[216,]
+> dat = readRDS("../../data/HLA_II_similarity_matrix_aa.rds")
+> 
+> 
+> exceptions = c("HLA-DRDQ*03:01_05:01_02:01","HLA-DRDQ*09:01_03:02_03:03",
++                "HLA-DRDQ*10:01_01:05_05:01","HLA-DRDQ*13:01_01:03_06:03", "HLA-DRDQ*15:01_01:02_06:02")
+> 
+> exception_DRB1_names = c("HLA-DRB1*03:01", "HLA-DRB1*09:01", "HLA-DRB1*10:01",
++                          "HLA-DRB1*13:01", "HLA-DRB1*15:01")
+> 
+> exception_DQAB_names = c("HLA-DQAB*05:01_02:01", "HLA-DQAB*03:02_03:03", "HLA-DQAB*01:05_05:01",
++                          "HLA-DQAB*01:03_06:03", "HLA-DQAB*01:02_06:02")
+> 
+> exception_index = match(exceptions, rownames(HLA_only))
+> exception_index
+[1]  61 169   8  89 132
+> 
+> newHLA_names = rownames(HLA_only)
+> newdata = HLA_only[exception_index,]
+> rownames(newdata) = exception_DQAB_names
+> newHLA_names[exception_index] = exception_DRB1_names
+> rownames(HLA_only) = newHLA_names
+> split_HLA = rbind(HLA_only,newdata)
+> 
+> # this is python stype 0-indexed HLA_II indexes
+> HLA_II_index=read.csv("../intermediate_files/HLA_II_index.csv",header = F)
+> dim(HLA_II_index)
+[1] 135   1
+> head(HLA_II_index)
+  V1
+1  0
+2  1
+3  6
+4  7
+5 10
+6 11
+> 
+> # this is R stype 1-indexed HLA_II indexes
+> HLA_II_index_verify = sort((   match(rownames(dat) , rownames(HLA_only))  )[!is.na(match(rownames(dat) , rownames(HLA_only)))])
+> HLA_II_index_verify = c(HLA_II_index_verify,c(216,217,218,219,220))
+> rownames(split_HLA)[HLA_II_index_verify]
+  [1] "HLA-DPAB*02:01_04:01" "HLA-DQAB*05:05_06:04" "HLA-DPAB*02:01_04:02"
+  [4] "HLA-DRB1*10:01"       "HLA-DRB1*01:03"       "HLA-DQAB*05:05_03:01"
+  [7] "HLA-DQAB*05:05_03:02" "HLA-DQAB*05:05_03:03" "HLA-DQAB*03:03_05:01"
+ [10] "HLA-DPAB*01:03_11:01" "HLA-DRB1*16:01"       "HLA-DPAB*02:01_13:01"
+ [13] "HLA-DQAB*03:03_03:01" "HLA-DQAB*03:03_03:02" "HLA-DPAB*02:01_03:01"
+ [16] "HLA-DQAB*02:01_03:01" "HLA-DQAB*03:03_06:02" "HLA-DQAB*02:01_03:03"
+ [19] "HLA-DQAB*02:01_03:02" "HLA-DRB1*01:01"       "HLA-DRB1*01:02"      
+ [22] "HLA-DRB1*07:01"       "HLA-DQAB*05:01_02:02" "HLA-DQAB*06:01_03:01"
+ [25] "HLA-DPAB*01:03_17:01" "HLA-DPAB*01:03_05:01" "HLA-DPAB*02:01_01:01"
+ [28] "HLA-DQAB*01:01_05:03" "HLA-DQAB*01:01_05:01" "HLA-DQAB*01:01_02:02"
+ [31] "HLA-DPAB*02:02_01:01" "HLA-DQAB*05:01_03:01" "HLA-DQAB*01:02_02:01"
+ [34] "HLA-DRB1*03:01"       "HLA-DQAB*01:01_03:01" "HLA-DQAB*01:01_03:02"
+ [37] "HLA-DRB1*12:01"       "HLA-DQAB*04:01_04:02" "HLA-DQAB*01:04_02:01"
+ [40] "HLA-DRB1*12:02"       "HLA-DQAB*01:02_05:01" "HLA-DRB1*11:04"      
+ [43] "HLA-DQAB*01:02_05:02" "HLA-DQAB*05:05_06:03" "HLA-DQAB*05:05_06:02"
+ [46] "HLA-DRB1*11:03"       "HLA-DRB1*11:02"       "HLA-DRB1*08:02"      
+ [49] "HLA-DQAB*03:01_03:02" "HLA-DPAB*02:02_02:01" "HLA-DQAB*03:01_03:01"
+ [52] "HLA-DRB1*13:01"       "HLA-DRB1*13:05"       "HLA-DRB1*11:01"      
+ [55] "HLA-DRB1*13:02"       "HLA-DRB1*08:04"       "HLA-DQAB*01:03_02:01"
+ [58] "HLA-DRB1*14:54"       "HLA-DQAB*01:03_02:02" "HLA-DPAB*02:02_04:02"
+ [61] "HLA-DPAB*02:02_04:01" "HLA-DQAB*01:04_05:03" "HLA-DPAB*02:01_10:01"
+ [64] "HLA-DQAB*05:05_02:02" "HLA-DQAB*05:05_02:01" "HLA-DQAB*02:01_02:02"
+ [67] "HLA-DQAB*02:01_02:01" "HLA-DRB1*13:03"       "HLA-DQAB*02:01_05:01"
+ [70] "HLA-DPAB*02:01_11:01" "HLA-DQAB*03:03_02:02" "HLA-DQAB*03:03_02:01"
+ [73] "HLA-DPAB*02:01_02:01" "HLA-DPAB*01:03_03:01" "HLA-DRB1*15:01"      
+ [76] "HLA-DRB1*04:08"       "HLA-DQAB*03:01_06:03" "HLA-DQAB*03:01_06:02"
+ [79] "HLA-DQAB*03:01_06:04" "HLA-DPAB*01:03_01:01" "HLA-DQAB*01:02_06:03"
+ [82] "HLA-DQAB*04:01_05:01" "HLA-DPAB*01:03_13:01" "HLA-DQAB*01:02_03:03"
+ [85] "HLA-DQAB*01:02_06:09" "HLA-DQAB*01:02_03:01" "HLA-DQAB*05:01_03:03"
+ [88] "HLA-DQAB*05:01_06:03" "HLA-DQAB*05:01_06:02" "HLA-DRB1*15:03"      
+ [91] "HLA-DRB1*15:02"       "HLA-DQAB*05:01_06:04" "HLA-DRB1*04:07"      
+ [94] "HLA-DRB1*04:05"       "HLA-DRB1*04:04"       "HLA-DRB1*04:03"      
+ [97] "HLA-DRB1*04:02"       "HLA-DRB1*04:01"       "HLA-DQAB*03:01_02:01"
+[100] "HLA-DQAB*03:01_02:02" "HLA-DPAB*01:03_02:01" "HLA-DRB1*09:01"      
+[103] "HLA-DQAB*01:02_06:04" "HLA-DPAB*02:01_05:01" "HLA-DRB1*16:02"      
+[106] "HLA-DQAB*05:05_05:01" "HLA-DRB1*14:07"       "HLA-DRB1*14:04"      
+[109] "HLA-DPAB*02:01_17:01" "HLA-DRB1*14:02"       "HLA-DQAB*04:01_03:01"
+[112] "HLA-DRB1*14:01"       "HLA-DPAB*01:03_04:02" "HLA-DPAB*01:03_04:01"
+[115] "HLA-DQAB*01:02_02:02" "HLA-DQAB*01:01_06:03" "HLA-DQAB*01:01_06:02"
+[118] "HLA-DQAB*05:01_05:01" "HLA-DQAB*01:03_03:01" "HLA-DRB1*08:03"      
+[121] "HLA-DRB1*08:01"       "HLA-DQAB*01:02_03:02" "HLA-DQAB*02:01_06:09"
+[124] "HLA-DQAB*02:01_06:02" "HLA-DQAB*02:01_06:03" "HLA-DQAB*01:03_06:01"
+[127] "HLA-DQAB*01:03_06:02" "HLA-DPAB*01:03_10:01" "HLA-DQAB*01:02_04:02"
+[130] "HLA-DPAB*02:02_05:01" "HLA-DQAB*05:01_02:01" "HLA-DQAB*03:02_03:03"
+[133] "HLA-DQAB*01:05_05:01" "HLA-DQAB*01:03_06:03" "HLA-DQAB*01:02_06:02"
+> 
+> # it verified that indexes from these two approached exactly match
+> table(HLA_II_index$V1+1 == HLA_II_index_verify, useNA="ifany")
+
+TRUE 
+ 135 
+> 
+> write.csv(rownames(split_HLA)[HLA_II_index_verify],
++           "../intermediate_files/HLA_II_names.csv",
++           row.names = F)
+> 
+> 
+> 
+> dat_index = match(rownames(split_HLA)[HLA_II_index_verify], rownames(dat))
+> new_dat = dat[dat_index, dat_index]
+> 
+> neigbor4_weights_mat = matrix(nrow = length(dat_index), ncol=5)
+> neigbor4_index_mat = matrix(nrow = length(dat_index), ncol=5)
+> threshold = 0.9
+>   
+> for (i in 1:135) {
++   print(i)
++   NN_res = HLA_KNN(i, new_dat, 5, split_HLA, threshold)
++   neigbor4_weights_mat[i,] = NN_res$neigbor_weights
++   neigbor4_index_mat[i, ] = NN_res$neigbhor_index
++ }
+[1] 1
+[1] 2
+[1] 3
+[1] 4
+[1] 5
+[1] 6
+[1] 7
+[1] 8
+[1] 9
+[1] 10
+[1] 11
+[1] 12
+[1] 13
+[1] 14
+[1] 15
+[1] 16
+[1] 17
+[1] 18
+[1] 19
+[1] 20
+[1] 21
+[1] 22
+[1] 23
+[1] 24
+[1] 25
+[1] 26
+[1] 27
+[1] 28
+[1] 29
+[1] 30
+[1] 31
+[1] 32
+[1] 33
+[1] 34
+[1] 35
+[1] 36
+[1] 37
+[1] 38
+[1] 39
+[1] 40
+[1] 41
+[1] 42
+[1] 43
+[1] 44
+[1] 45
+[1] 46
+[1] 47
+[1] 48
+[1] 49
+[1] 50
+[1] 51
+[1] 52
+[1] 53
+[1] 54
+[1] 55
+[1] 56
+[1] 57
+[1] 58
+[1] 59
+[1] 60
+[1] 61
+[1] 62
+[1] 63
+[1] 64
+[1] 65
+[1] 66
+[1] 67
+[1] 68
+[1] 69
+[1] 70
+[1] 71
+[1] 72
+[1] 73
+[1] 74
+[1] 75
+[1] 76
+[1] 77
+[1] 78
+[1] 79
+[1] 80
+[1] 81
+[1] 82
+[1] 83
+[1] 84
+[1] 85
+[1] 86
+[1] 87
+[1] 88
+[1] 89
+[1] 90
+[1] 91
+[1] 92
+[1] 93
+[1] 94
+[1] 95
+[1] 96
+[1] 97
+[1] 98
+[1] 99
+[1] 100
+[1] 101
+[1] 102
+[1] 103
+[1] 104
+[1] 105
+[1] 106
+[1] 107
+[1] 108
+[1] 109
+[1] 110
+[1] 111
+[1] 112
+[1] 113
+[1] 114
+[1] 115
+[1] 116
+[1] 117
+[1] 118
+[1] 119
+[1] 120
+[1] 121
+[1] 122
+[1] 123
+[1] 124
+[1] 125
+[1] 126
+[1] 127
+[1] 128
+[1] 129
+[1] 130
+[1] 131
+[1] 132
+[1] 133
+[1] 134
+[1] 135
+> 
+> ## save tables out
+> 
+> output_dir = "../intermediate_files"
+> 
+> write.csv(neigbor4_weights_mat, 
++           file.path(output_dir, "HLA_II_weights_mat.csv"),
++           row.names = F)
+> 
+> # index-1 for python format
+> write.csv(neigbor4_index_mat-1, 
++           file.path(output_dir, "HLA_II_neighbor_index_mat.csv"),
++           row.names = F)
+> 
+> 
+> sessionInfo()
+R version 4.4.0 (2024-04-24)
+Platform: x86_64-pc-linux-gnu
+Running under: Ubuntu 18.04.6 LTS
+
+Matrix products: default
+BLAS/LAPACK: FlexiBLAS OPENBLAS;  LAPACK version 3.11.0
+
+locale:
+ [1] LC_CTYPE=en_US.UTF-8       LC_NUMERIC=C              
+ [3] LC_TIME=en_US.UTF-8        LC_COLLATE=en_US.UTF-8    
+ [5] LC_MONETARY=en_US.UTF-8    LC_MESSAGES=en_US.UTF-8   
+ [7] LC_PAPER=en_US.UTF-8       LC_NAME=C                 
+ [9] LC_ADDRESS=C               LC_TELEPHONE=C            
+[11] LC_MEASUREMENT=en_US.UTF-8 LC_IDENTIFICATION=C       
+
+time zone: America/Los_Angeles
+tzcode source: system (glibc)
+
+attached base packages:
+[1] stats     graphics  grDevices utils     datasets  methods   base     
+
+loaded via a namespace (and not attached):
+[1] compiler_4.4.0
+> q(save = "no")
+> proc.time()
+   user  system elapsed 
+  0.307   0.309   0.859 

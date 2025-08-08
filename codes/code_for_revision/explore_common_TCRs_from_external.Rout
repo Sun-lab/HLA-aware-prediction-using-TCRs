@@ -1,0 +1,355 @@
+
+R version 4.4.0 (2024-04-24) -- "Puppy Cup"
+Copyright (C) 2024 The R Foundation for Statistical Computing
+Platform: x86_64-pc-linux-gnu
+
+R is free software and comes with ABSOLUTELY NO WARRANTY.
+You are welcome to redistribute it under certain conditions.
+Type 'license()' or 'licence()' for distribution details.
+
+  Natural language support but running in an English locale
+
+R is a collaborative project with many contributors.
+Type 'contributors()' for more information and
+'citation()' on how to cite R or R packages in publications.
+
+Type 'demo()' for some demos, 'help()' for on-line help, or
+'help.start()' for an HTML browser interface to help.
+Type 'q()' to quit R.
+
+> 
+> library(dplyr)
+
+Attaching package: ‘dplyr’
+
+The following objects are masked from ‘package:stats’:
+
+    filter, lag
+
+The following objects are masked from ‘package:base’:
+
+    intersect, setdiff, setequal, union
+
+> library(ggplot2)
+> library(ggpubr)
+> library(viridis)
+Loading required package: viridisLite
+> library(ggpointdensity)
+> library(ggExtra)
+> 
+> theme_set(theme_classic())
+> 
+> # for external TCRs from Chen et al. 2017 and Huth et al. 2019 that also appear
+> # in the Emerson frequent TCRs, 
+> # identify their index among the Emerson frequent TCRs
+> # load the pvalue files from HLA-agnostic model and HLA-specific models under corresponding HLAs
+> # visualize the pvalue scatterplots
+> 
+> 
+> # load external TCRs from Chen et al. 2017 and Huth et al. 2019 that also appear
+> # in the Emerson frequent TCRs
+> 
+> df_A02 = read.csv(file.path("../intermediate_files/Chen_2017", 
++                             "Chen_2017_TCRs_processed_common.csv"), 
++                   header=TRUE)
+> dim(df_A02)
+[1] 535   1
+> head(df_A02)
+                       TCR_name
+1     TCRBV05-01*01,CASSSVNEQFF
+2 TCRBV09-01*01,CASSVGGVSYNEQFF
+3 TCRBV06-05*01,CASSYSGQGTDTQYF
+4    TCRBV29-01*01,CSVVPRGTEAFF
+5   TCRBV19-01*01,CASSIRAGNEQFF
+6   TCRBV11-02*02,CASSFSGDYEQYF
+> 
+> df_B0702 = read.csv(file.path("../intermediate_files/Huth_2019", 
++                             "Huth_2019_TCRs_processed_common_B0702.csv"), 
++                   header=TRUE)
+> dim(df_B0702)
+[1] 54  1
+> 
+> df_C0702 = read.csv(file.path("../intermediate_files/Huth_2019", 
++                               "Huth_2019_TCRs_processed_common_C0702.csv"), 
++                     header=TRUE)
+> dim(df_C0702)
+[1] 69  1
+> 
+> # load Emerson TCR names
+> 
+> df_names = read.csv(file.path("../intermediate_files", 
++                               "TCR_names.csv"), 
++                     header=TRUE)
+> dim(df_names)
+[1] 1098738       1
+> head(df_names)
+                       TCR_name
+1     TCRBV29-01*01,CSVEESYEQYF
+2  TCRBV05-01*01,CASSLRGSGNTIYF
+3 TCRBV04-02*01,CASSQEGQSSYEQYF
+4  TCRBV06-05*01,CASSYSGSNQPQHF
+5     TCRBV29-01*01,CSVYRGHEQYF
+6  TCRBV06-04*01,CASSDNSGANVLTF
+>   
+> # find index
+> A02_indexes = match(df_A02$TCR_name, df_names$TCR_name)
+> B0702_indexes = match(df_B0702$TCR_name, df_names$TCR_name)
+> C0702_indexes = match(df_C0702$TCR_name, df_names$TCR_name)
+> 
+> table(df_names$TCR_name[A02_indexes]==df_A02$TCR_name, useNA="ifany")
+
+TRUE 
+ 535 
+> table(df_names$TCR_name[B0702_indexes]==df_B0702$TCR_name, useNA="ifany")
+
+TRUE 
+  54 
+> table(df_names$TCR_name[C0702_indexes]==df_C0702$TCR_name, useNA="ifany")
+
+TRUE 
+  69 
+> 
+> # save 0-indexed indexes out, for the consideration of running python
+> output_A02 = data.frame(TCR_index = A02_indexes-1)
+> write.csv(output_A02, 
++           file.path("../intermediate_files/Chen_2017", 
++                     "Chen_2017_TCRs_common_indexes_A02.csv"),
++           row.names=FALSE)
+> 
+> output_B0702 = data.frame(TCR_index = B0702_indexes-1)
+> write.csv(output_B0702, 
++           file.path("../intermediate_files/Huth_2019", 
++                     "Huth_2019_TCRs_common_indexes_B0702.csv"),
++           row.names=FALSE)
+> 
+> output_C0702 = data.frame(TCR_index = C0702_indexes-1)
+> write.csv(output_C0702, 
++           file.path("../intermediate_files/Huth_2019", 
++                     "Huth_2019_TCRs_common_indexes_C0702.csv"),
++           row.names=FALSE)
+> 
+> # identify the index of three HLAs, to help with loading pvalue files
+> 
+> df_hla_names = read.csv("../intermediate_files/complete_HLA_rownames.csv", 
++                         header=TRUE)
+> dim(df_hla_names)
+[1] 220   1
+> 
+> three_hlas = c("HLA-A*02:01", "HLA-B*07:02", "HLA-C*07:02")
+> three_hla_indexes = match(three_hlas, df_hla_names$HLA_name)
+> table(three_hlas==df_hla_names$HLA_name[three_hla_indexes], 
++       useNA="ifany")
+
+TRUE 
+   3 
+> 
+> hla_index_dict = list()
+> for (i in 1:3){
++   hla_index_dict[[three_hlas[i]]] = three_hla_indexes[i]
++ }
+> 
+> # load pvalue files
+> 
+> pvalue_list = list()
+> 
+> df_pval_all = read.csv("../HLA_agnostic_model/results/pvalues.csv", 
++                        header = TRUE)
+> stopifnot(dim(df_pval_all)[1]==1098738)
+> pvalue_list[["all"]] = df_pval_all$pval
+> 
+> for (hla_name in three_hlas){
++   df_pval_specific = read.csv(file.path("../HLA_specific_model_HLA_I/results/pvals", 
++                                         paste0("pvalues_hla_index_", 
++                                                as.character(hla_index_dict[[hla_name]]-1), ".csv")), 
++                               header = TRUE)
++   stopifnot(dim(df_pval_specific)[1]==1098738)
++   pvalue_list[[hla_name]] = df_pval_specific$pval
++ }
+> 
+> 
+> TCR_index_list = list()
+> 
+> TCR_index_list[["HLA-A*02:01"]] = A02_indexes
+> TCR_index_list[["HLA-B*07:02"]] = B0702_indexes
+> TCR_index_list[["HLA-C*07:02"]] = C0702_indexes
+> 
+> fig_list = list()
+> 
+> cnt = 0
+> 
+> for (hla_name in three_hlas){
++ 
++   cur_indexes = TCR_index_list[[hla_name]]
++   df_cur = data.frame(all=pvalue_list[["all"]][cur_indexes], 
++                       hla=pvalue_list[[hla_name]][cur_indexes])
++   
++     
++   p1 <- ggplot(df_cur, aes(x = -log10(all), y = -log10(hla))) +
++         geom_pointdensity() +
++         scale_color_viridis() + 
++         xlab("-log10(HLA-agnostic pvalue)") + 
++         ylab(paste0("-log10(", hla_name, "-specific pvalue)")) +     
++         geom_abline(intercept = 0, slope = 1,  color = "grey", linetype = "dashed") +
++         ggtitle(paste0(hla_name, " TCRs\nappearing in Emerson"))
++   
++   cnt = cnt + 1
++   fig_list[[cnt]] = p1
++   
++ }
+> 
+> # also add the scatterplots based on the TCRs significant under each HLA-specific model
+> 
+> sign_TCR_list = list()
+> 
+> for (hla_name in three_hlas){
++   sign_TCR_list[[hla_name]] = which(pvalue_list[[hla_name]]<=0.001)
++ }
+> 
+> 
+> for (hla_name in three_hlas){
++   
++   cur_indexes = sign_TCR_list[[hla_name]]
++   df_cur = data.frame(all=pvalue_list[["all"]][cur_indexes], 
++                       hla=pvalue_list[[hla_name]][cur_indexes])
++   
++   
++   p1 <- ggplot(df_cur, aes(x = -log10(all), y = -log10(hla))) +
++     geom_pointdensity() +
++     scale_color_viridis() + 
++     xlab("-log10(HLA-agnostic pvalue)") + 
++     ylab(paste0("-log10(", hla_name, "-specific pvalue)")) +     
++     geom_abline(intercept = 0, slope = 1,  color = "grey", linetype = "dashed") +
++     ggtitle(paste0(hla_name, "\nHLA-specific model significant TCRs"))
++   
++   cnt = cnt + 1
++   fig_list[[cnt]] = p1
++   
++ }
+> 
+> # get from the TCRs significant under each HLA-specific model
+> # under each pvalue cutoffs
+> # what proportion of them are also in the external TCRs
+> 
+> sign_TCR_cutoffs = list()
+> 
+> p_cutoffs = 10^c(-3, -4, -5, -6)
+> 
+> for (pcut in p_cutoffs){
++   sign_TCR_list = list()
++   for (hla_name in three_hlas){
++     sign_TCR_list[[hla_name]] = which(pvalue_list[[hla_name]]<=pcut)
++   }
++   sign_TCR_cutoffs[[as.character(pcut)]] = sign_TCR_list
++ }
+> 
+> for (hla_name in three_hlas){
++   
++   prop_vec = NULL
++   
++   for (pcut in p_cutoffs){
++     
++     cur_sign_TCRs = sign_TCR_cutoffs[[as.character(pcut)]][[hla_name]]
++     cur_intersect = intersect(cur_sign_TCRs, TCR_index_list[[hla_name]])
++   
++     prop_vec = c(prop_vec, length(cur_intersect)/length(cur_sign_TCRs))
++     
++   }
++   
++   df_prop = data.frame(p_cutoffs = c("1e-03", "1e-04", "1e-05", "1e-06"), 
++                        prop = prop_vec)
++     
++   p1 <- ggplot(df_prop, aes(fill=p_cutoffs, y=prop, x=p_cutoffs)) + 
++         geom_bar(position="dodge", stat="identity") + 
++         xlab("p-value cutoff") + 
++         ylab("Proportion") + 
++         ylim(0, 1) + 
++         ggtitle(paste0(hla_name, "\nProportion of external TCRs out of", 
++                        "\nTCRs significant from HLA-specific model"))
++   
++   cnt = cnt + 1
++   fig_list[[cnt]] = p1
++   
++ }
+> 
+> figure_dir = "./figures"
+> dir.create(figure_dir)
+Warning message:
+In dir.create(figure_dir) : './figures' already exists
+> 
+> figure_file = file.path(figure_dir, 
++                         paste0("external_TCRs_pvalue_scatterplots.pdf"))
+> 
+> n_col = 3
+> n_row = ceiling(length(fig_list)/n_col)
+> 
+> pdf(file = figure_file, 
++     width = 4.2*n_col, height = 3.2*n_row)
+> combined_plot = ggarrange(plotlist = fig_list, ncol = n_col, nrow = n_row)
+> print(combined_plot)
+> dev.off()    
+null device 
+          1 
+> 
+> # get what proportion of external TCRs appearing in Emerson data appear significant
+> # under HLA-specific model
+> 
+> prop_sign_vec = NULL
+> 
+> for (hla_name in three_hlas){
++   
++   pcut = p_cutoffs[1]
++   
++   cur_sign_TCRs = sign_TCR_cutoffs[[as.character(pcut)]][[hla_name]]
++   cur_intersect = intersect(cur_sign_TCRs, TCR_index_list[[hla_name]])
++   
++   prop_sign_vec = c(prop_sign_vec, length(cur_intersect)/length(TCR_index_list[[hla_name]]))
++     
++ }
+> 
+> prop_sign_vec 
+[1] 0.005607477 0.074074074 0.130434783
+> 
+> 
+> sessionInfo()
+R version 4.4.0 (2024-04-24)
+Platform: x86_64-pc-linux-gnu
+Running under: Ubuntu 18.04.6 LTS
+
+Matrix products: default
+BLAS/LAPACK: FlexiBLAS OPENBLAS;  LAPACK version 3.11.0
+
+locale:
+ [1] LC_CTYPE=en_US.UTF-8       LC_NUMERIC=C              
+ [3] LC_TIME=en_US.UTF-8        LC_COLLATE=en_US.UTF-8    
+ [5] LC_MONETARY=en_US.UTF-8    LC_MESSAGES=en_US.UTF-8   
+ [7] LC_PAPER=en_US.UTF-8       LC_NAME=C                 
+ [9] LC_ADDRESS=C               LC_TELEPHONE=C            
+[11] LC_MEASUREMENT=en_US.UTF-8 LC_IDENTIFICATION=C       
+
+time zone: America/Los_Angeles
+tzcode source: system (glibc)
+
+attached base packages:
+[1] stats     graphics  grDevices utils     datasets  methods   base     
+
+other attached packages:
+[1] ggExtra_0.10.1       ggpointdensity_0.1.0 viridis_0.6.5       
+[4] viridisLite_0.4.2    ggpubr_0.6.0         ggplot2_3.5.2       
+[7] dplyr_1.1.4         
+
+loaded via a namespace (and not attached):
+ [1] gtable_0.3.6       miniUI_0.1.2       compiler_4.4.0     ggsignif_0.6.4    
+ [5] promises_1.3.2     Rcpp_1.0.14        tidyselect_1.2.1   dichromat_2.0-0.1 
+ [9] gridExtra_2.3      later_1.4.2        tidyr_1.3.1        scales_1.4.0      
+[13] fastmap_1.2.0      mime_0.13          R6_2.6.1           labeling_0.4.3    
+[17] generics_0.1.4     backports_1.5.0    tibble_3.2.1       car_3.1-2         
+[21] shiny_1.10.0       pillar_1.10.2      RColorBrewer_1.1-3 rlang_1.1.6       
+[25] broom_1.0.7        httpuv_1.6.16      cli_3.6.5          withr_3.0.2       
+[29] magrittr_2.0.3     digest_0.6.37      grid_4.4.0         xtable_1.8-4      
+[33] cowplot_1.1.3      lifecycle_1.0.4    vctrs_0.6.5        rstatix_0.7.2     
+[37] glue_1.8.0         farver_2.1.2       abind_1.4-8        carData_3.0-5     
+[41] purrr_1.0.4        htmltools_0.5.8.1  pkgconfig_2.0.3   
+> q(save = "no")
+> proc.time()
+   user  system elapsed 
+ 10.414   0.909  22.051 

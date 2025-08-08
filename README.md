@@ -3,7 +3,7 @@ This repository contains the source code associated with the paper, [Exploration
 
 A T cell can recognize some specific peptide-HLA complexes presented on cell surfaces by its T cell receptor (TCR). A blood sample can contain millions of unique TCRs, representing a snapshot of an individual’s TCR repertoire. TCR repertoire-wide association studies (TReWAS) aim to identify associations between individual TCRs and disease or exposure status. Prior research has shown that TCRs linked to viral infections can be discovered through TReWAS, and such TCRs can accurately predict current or past infections. Many of these TCRs are strongly associated with specific HLA alleles, suggesting that incorporating HLA information may enhance both TReWAS analyses and TCR-based predictions.
 
-In our study, we evaluated TCR-based predictions while conditioning on individual HLA alleles or their k-nearest neighbors. We observed improved prediction accuracy for som HLA alleles. These HLA-specific predictions offer insights into the role of particular HLAs in infection or disease, with potential applications in personalized medicine.
+In our study, we evaluated TCR-based predictions while conditioning on individual HLA alleles or their k-nearest neighbors. We observed improved prediction accuracy for some HLA alleles. These HLA-specific predictions offer insights into the role of particular HLAs in infection or disease, with potential applications in personalized medicine.
 
 # Terminology
 A **HLA-agonistic Model** was trained using all individuals regardless of their HLA alleles. 
@@ -15,7 +15,7 @@ A **Combined Model** for an HLA allele was trained by combininig the TCRs identi
 For details of how the models are trained and evaluated, please refer to the paper's method section.
 
 # Requirements
-There is no specific hardware requirements to excute all the scripts, Python scripts were developed under Python 3.10.12. For Python package versions please see requirements.txt. 
+There is no specific hardware requirements to excute all the scripts, Python scripts were developed under Python 3.11.13. For Python package versions please see environment.yml. 
 
 # Directory Introduction
 

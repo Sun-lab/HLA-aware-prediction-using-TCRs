@@ -1,0 +1,118 @@
+
+R version 4.4.0 (2024-04-24) -- "Puppy Cup"
+Copyright (C) 2024 The R Foundation for Statistical Computing
+Platform: x86_64-pc-linux-gnu
+
+R is free software and comes with ABSOLUTELY NO WARRANTY.
+You are welcome to redistribute it under certain conditions.
+Type 'license()' or 'licence()' for distribution details.
+
+  Natural language support but running in an English locale
+
+R is a collaborative project with many contributors.
+Type 'contributors()' for more information and
+'citation()' on how to cite R or R packages in publications.
+
+Type 'demo()' for some demos, 'help()' for on-line help, or
+'help.start()' for an HTML browser interface to help.
+Type 'q()' to quit R.
+
+> library(pROC)
+Type 'citation("pROC")' for a citation.
+
+Attaching package: ‘pROC’
+
+The following objects are masked from ‘package:stats’:
+
+    cov, smooth, var
+
+> library(Matrix)
+> 
+> # this HLA_index is the HLA index in the dist_matrix
+> # For the HLA-I we didnt have this problem because all the rows in the matrix have its corresponding entry in the HLA matrix.
+> HLA_KNN = function(HLA_index, dist_mat, k, HLA, similar_threshold)
++ {
++   test_weights = c(1, sort(dist_mat[HLA_index,], decreasing = T)[2:k])
++   index_to_drop = which(test_weights < similar_threshold)
++   
++   test_weights_index = order(dist_mat[HLA_index,],decreasing = T )[1:k]
++   HLA_at = which(test_weights_index ==  HLA_index)
++   if (HLA_at != 1) {
++     test_weights_index = test_weights_index[-HLA_at]
++     test_weights_index = c(HLA_index, test_weights_index)
++   }
++   
++   neigbhor_names = rownames(dist_mat)[test_weights_index]
++   neigbhor_index_HLA_mat = match(neigbhor_names, row.names(HLA))
++   test_weights[index_to_drop] = NA
++   neigbhor_index_HLA_mat[index_to_drop] =NA
++   
++   return(list(neigbor_weights = test_weights, neigbhor_index = neigbhor_index_HLA_mat  ) )
++ }
+> 
+> 
+> HLA  = readRDS("../../data/DeWitt_2018/HLA_v2_CMV_data.rds")
+> HLA_no_NA = HLA[,!is.na(HLA[216,])]
+> HLA_only = HLA_no_NA[1:215,]
+> CMV = HLA_no_NA[216,]
+> similar_amino = readRDS("../../data/correlation_matrices.rds")$aa
+> 
+> 
+> 
+> neigbor4_weights_mat = matrix(nrow = nrow(similar_amino), ncol=5)
+> neigbor4_index_mat = matrix(nrow = nrow(similar_amino), ncol=5)
+> threshold = 0.9
+> 
+> 
+> 
+> 
+> for (i in 1:nrow(similar_amino)) {
++   NN_res = HLA_KNN(i, similar_amino, 5, HLA_no_NA, threshold)
++   neigbor4_weights_mat[i,] = NN_res$neigbor_weights
++   neigbor4_index_mat[i, ] = NN_res$neigbhor_index
++   
++ }
+> ####
+> 
+> output_dir = "../intermediate_files"
+>   
+> write.csv(neigbor4_weights_mat, 
++           file.path(output_dir, "HLA_I_weights_mat.csv"), 
++           row.names = F)
+> 
+> # index-1 for python format
+> write.csv(neigbor4_index_mat-1, 
++           file.path(output_dir, "HLA_I_neighbor_index_mat.csv"), 
++           row.names = F)
+> 
+> sessionInfo()
+R version 4.4.0 (2024-04-24)
+Platform: x86_64-pc-linux-gnu
+Running under: Ubuntu 18.04.6 LTS
+
+Matrix products: default
+BLAS/LAPACK: FlexiBLAS OPENBLAS;  LAPACK version 3.11.0
+
+locale:
+ [1] LC_CTYPE=en_US.UTF-8       LC_NUMERIC=C              
+ [3] LC_TIME=en_US.UTF-8        LC_COLLATE=en_US.UTF-8    
+ [5] LC_MONETARY=en_US.UTF-8    LC_MESSAGES=en_US.UTF-8   
+ [7] LC_PAPER=en_US.UTF-8       LC_NAME=C                 
+ [9] LC_ADDRESS=C               LC_TELEPHONE=C            
+[11] LC_MEASUREMENT=en_US.UTF-8 LC_IDENTIFICATION=C       
+
+time zone: America/Los_Angeles
+tzcode source: system (glibc)
+
+attached base packages:
+[1] stats     graphics  grDevices utils     datasets  methods   base     
+
+other attached packages:
+[1] Matrix_1.7-1 pROC_1.18.5 
+
+loaded via a namespace (and not attached):
+[1] compiler_4.4.0 plyr_1.8.9     Rcpp_1.0.14    grid_4.4.0     lattice_0.22-6
+> q(save = "no")
+> proc.time()
+   user  system elapsed 
+  1.030   0.417   1.644 

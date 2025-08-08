@@ -1,0 +1,180 @@
+
+R version 4.4.0 (2024-04-24) -- "Puppy Cup"
+Copyright (C) 2024 The R Foundation for Statistical Computing
+Platform: x86_64-pc-linux-gnu
+
+R is free software and comes with ABSOLUTELY NO WARRANTY.
+You are welcome to redistribute it under certain conditions.
+Type 'license()' or 'licence()' for distribution details.
+
+  Natural language support but running in an English locale
+
+R is a collaborative project with many contributors.
+Type 'contributors()' for more information and
+'citation()' on how to cite R or R packages in publications.
+
+Type 'demo()' for some demos, 'help()' for on-line help, or
+'help.start()' for an HTML browser interface to help.
+Type 'q()' to quit R.
+
+> 
+> library(dplyr)
+
+Attaching package: ‘dplyr’
+
+The following objects are masked from ‘package:stats’:
+
+    filter, lag
+
+The following objects are masked from ‘package:base’:
+
+    intersect, setdiff, setequal, union
+
+> library(ggplot2)
+> library(ggpubr)
+> library(viridis)
+Loading required package: viridisLite
+> library(ggpointdensity)
+> library(ggExtra)
+> 
+> options(bitmapType = "cairo") 
+> 
+> theme_set(theme_classic())
+> 
+> # generate scatterplots between the pvalues from A0201 only individuals and 
+> # those from individuals with both A0201 and B0702
+> 
+> df_hla_names = read.csv("../intermediate_files/complete_HLA_rownames.csv", 
++                         header=TRUE)
+> dim(df_hla_names)
+[1] 220   1
+> 
+> two_hlas = c("HLA-A*02:01", "HLA-B*07:02")
+> two_hla_indexes = match(two_hlas, df_hla_names$HLA_name)
+> table(two_hlas==df_hla_names$HLA_name[two_hla_indexes], 
++       useNA="ifany")
+
+TRUE 
+   2 
+> 
+> hla_index_dict = list()
+> for (i in 1:2){
++   hla_index_dict[[two_hlas[i]]] = two_hla_indexes[i]
++ }
+> 
+> hla_index_dict
+$`HLA-A*02:01`
+[1] 125
+
+$`HLA-B*07:02`
+[1] 20
+
+> 
+> # load pvalue files
+> 
+> 
+> hla_name = two_hlas[1]
+> 
+> df_pval_A0201 = read.csv(file.path("../HLA_specific_model_HLA_I/results/pvals", 
++                                   paste0("pvalues_hla_index_", 
++                                          as.character(hla_index_dict[[hla_name]]), ".csv")), 
++                          header = TRUE)
+> stopifnot(dim(df_pval_A0201)[1]==1098738)
+> head(df_pval_A0201)
+       pval
+1 0.9403833
+2 1.0000000
+3 1.0000000
+4 0.9407269
+5 1.0000000
+6 0.9959936
+> 
+> df_pval_double = read.csv("./results/pvalues_double_hlas.csv", 
++                           header = TRUE)
+> stopifnot(dim(df_pval_double)[1]==1098738)
+> head(df_pval_double)
+       pval
+1 0.6359942
+2 0.7674548
+3 1.0000000
+4 0.9535256
+5 1.0000000
+6 0.9931423
+> 
+> 
+> 
+> df_cur = data.frame(A0201=df_pval_A0201$pval, 
++                     double=df_pval_double$pval)
+> 
+> # df_cur = df_cur[which((df_cur$A0201<1)|(df_cur$double<1)),]
+>   
+> p1 <- ggplot(df_cur, aes(x = -log10(A0201), y = -log10(double))) +
++       geom_pointdensity() +
++       scale_color_viridis() + 
++       xlab("-log10(A0201-specific pvalue)") + 
++       ylab(paste0("-log10(A0201-B0702-specific pvalue)")) +     
++       geom_abline(intercept = 0, slope = 1,  color = "grey", linetype = "dashed") +
++       ggtitle(paste0("comparison between pvalues from \n", 
++                      "A0201-specific and A0201-B0702-specific model\n", 
++                      "each point is one TCR"))
+>   
+> 
+> figure_dir = "./figures"
+> if (!dir.exists(figure_dir)){
++   dir.create(figure_dir)
++ }
+> 
+> figure_file = file.path(figure_dir, 
++                         paste0("TCR_pval_single_double_models_scatterplot.png"))
+> 
+> png(file = figure_file, 
++     width = 6.8, height = 5.8, units="in", res=1200)
+> print(p1)
+> dev.off()    
+null device 
+          1 
+> 
+> 
+> sessionInfo()
+R version 4.4.0 (2024-04-24)
+Platform: x86_64-pc-linux-gnu
+Running under: Ubuntu 18.04.6 LTS
+
+Matrix products: default
+BLAS/LAPACK: FlexiBLAS OPENBLAS;  LAPACK version 3.11.0
+
+locale:
+ [1] LC_CTYPE=en_US.UTF-8       LC_NUMERIC=C              
+ [3] LC_TIME=en_US.UTF-8        LC_COLLATE=en_US.UTF-8    
+ [5] LC_MONETARY=en_US.UTF-8    LC_MESSAGES=en_US.UTF-8   
+ [7] LC_PAPER=en_US.UTF-8       LC_NAME=C                 
+ [9] LC_ADDRESS=C               LC_TELEPHONE=C            
+[11] LC_MEASUREMENT=en_US.UTF-8 LC_IDENTIFICATION=C       
+
+time zone: America/Los_Angeles
+tzcode source: system (glibc)
+
+attached base packages:
+[1] stats     graphics  grDevices utils     datasets  methods   base     
+
+other attached packages:
+[1] ggExtra_0.10.1       ggpointdensity_0.1.0 viridis_0.6.5       
+[4] viridisLite_0.4.2    ggpubr_0.6.0         ggplot2_3.5.2       
+[7] dplyr_1.1.4         
+
+loaded via a namespace (and not attached):
+ [1] gtable_0.3.6       miniUI_0.1.2       compiler_4.4.0     ggsignif_0.6.4    
+ [5] promises_1.3.2     Rcpp_1.0.14        tidyselect_1.2.1   dichromat_2.0-0.1 
+ [9] gridExtra_2.3      later_1.4.2        tidyr_1.3.1        scales_1.4.0      
+[13] fastmap_1.2.0      mime_0.13          R6_2.6.1           labeling_0.4.3    
+[17] generics_0.1.4     backports_1.5.0    tibble_3.2.1       car_3.1-2         
+[21] shiny_1.10.0       pillar_1.10.2      RColorBrewer_1.1-3 rlang_1.1.6       
+[25] broom_1.0.7        httpuv_1.6.16      cli_3.6.5          withr_3.0.2       
+[29] magrittr_2.0.3     digest_0.6.37      grid_4.4.0         xtable_1.8-4      
+[33] lifecycle_1.0.4    vctrs_0.6.5        rstatix_0.7.2      glue_1.8.0        
+[37] farver_2.1.2       abind_1.4-8        carData_3.0-5      purrr_1.0.4       
+[41] htmltools_0.5.8.1  pkgconfig_2.0.3   
+> q(save = "no")
+> proc.time()
+   user  system elapsed 
+911.991   1.157 913.552 

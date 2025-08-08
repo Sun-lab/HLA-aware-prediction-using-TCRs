@@ -38,12 +38,16 @@ get_HLA_II_asso = function()
     }
     
     test_mat = matrix(c(res_00, res_01, res_10,res_11),nrow=2, byrow = T)
-    test_res = fisher.test(test_mat, alternative = "greater")
+    test_res = fisher.test(test_mat, alternative = "two.sided")
     HLA_II_asso_res[res_index] = test_res$p.value
     HLA_II_asso_training_size[res_index] = subj_size
     res_index = res_index + 1
   }
-  return(HLA_II_asso_res)
+  # here the indexes are already converted to 1-indexed  
+  df_HLA_II_res = data.frame(HLA_II_index = HLA_II_index, 
+                             HLA_II_asso_training_size = HLA_II_asso_training_size, 
+                             pvalue = HLA_II_asso_res)  
+  return(df_HLA_II_res)
 }
 
 get_HLA_I_asso = function()
@@ -80,18 +84,35 @@ get_HLA_I_asso = function()
     }
     
     test_mat = matrix(c(res_00, res_01, res_10,res_11),nrow=2, byrow = T)
-    test_res = fisher.test(test_mat, alternative = "less")
+    test_res = fisher.test(test_mat, alternative = "two.sided")
     HLA_I_asso_res[res_index] = test_res$p.value
     HLA_I_asso_training_size[res_index] = subj_size
     res_index = res_index + 1
   }
-  return(HLA_I_asso_res)
+  # here the indexes are already converted to 1-indexed
+  df_HLA_I_res = data.frame(HLA_I_index = HLA_I_index, 
+                            HLA_I_asso_training_size = HLA_I_asso_training_size, 
+                            pvalue = HLA_I_asso_res)
+  
+  return(df_HLA_I_res)
 }
 
-split_HLA = readRDS("../intermediate_files/complete_HLA.txt")
-CMV = read.csv("../intermediate_files/CMV.txt")
+
+split_HLA = readRDS("../../../intermediate_files/complete_HLA_NAs_kept.rds")
+CMV = read.csv("../../../specific_HLA_pred/data_files/CMV.txt")
+CMV = CMV$x
+
+df_HLA_I_res = get_HLA_I_asso()
+df_HLA_II_res = get_HLA_II_asso()
 
 
-HLA_I_asso_res = get_HLA_I_asso()
-HLA_II_asso_res = get_HLA_II_asso()
+write.csv(df_HLA_I_res, 
+          "results/HLA_I_CMV_asso_res.csv", 
+          row.names = FALSE)
 
+write.csv(df_HLA_II_res, 
+          "results/HLA_II_CMV_asso_res.csv", 
+          row.names = FALSE)
+
+sessionInfo()
+q(save = "no")

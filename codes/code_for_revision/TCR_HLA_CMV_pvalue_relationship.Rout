@@ -1,0 +1,301 @@
+
+R version 4.4.0 (2024-04-24) -- "Puppy Cup"
+Copyright (C) 2024 The R Foundation for Statistical Computing
+Platform: x86_64-pc-linux-gnu
+
+R is free software and comes with ABSOLUTELY NO WARRANTY.
+You are welcome to redistribute it under certain conditions.
+Type 'license()' or 'licence()' for distribution details.
+
+  Natural language support but running in an English locale
+
+R is a collaborative project with many contributors.
+Type 'contributors()' for more information and
+'citation()' on how to cite R or R packages in publications.
+
+Type 'demo()' for some demos, 'help()' for on-line help, or
+'help.start()' for an HTML browser interface to help.
+Type 'q()' to quit R.
+
+> 
+> library(readxl)
+> library(ggplot2)
+> library(ggrepel)
+> library(ggpubr)
+> library(viridis)
+Loading required package: viridisLite
+> library(ggpointdensity)
+> library(ggExtra)
+> 
+> theme_set(theme_classic())
+> 
+> fig_dir = "./figures"
+> res_dir = "../result_tables"
+> 
+> dir_list = list()
+> dir_list[["hla_i"]] = "../HLA_specific_model_HLA_I"
+> dir_list[["hla_ii"]] = "../HLA_specific_model_HLA_II"
+> 
+> df_hla_i_index = read.csv("../intermediate_files/HLA_I_index.csv", 
++                           header=FALSE)
+> df_hla_ii_index = read.csv("../intermediate_files/HLA_II_index.csv", 
++                            header=FALSE)
+> df_hla_i_index$hla_type = "hla_i"
+> df_hla_ii_index$hla_type = "hla_ii"
+> df_hla_i_index$relative_ind = 0:(nrow(df_hla_i_index)-1)
+> df_hla_ii_index$relative_ind = 0:(nrow(df_hla_ii_index)-1)
+> 
+> df_hlas = rbind(df_hla_i_index, df_hla_ii_index)
+> dim(df_hlas)
+[1] 220   3
+> colnames(df_hlas)[1] = "ind"
+> head(df_hlas)
+  ind hla_type relative_ind
+1   2    hla_i            0
+2   3    hla_i            1
+3   4    hla_i            2
+4   5    hla_i            3
+5   8    hla_i            4
+6   9    hla_i            5
+> 
+> df_all_names = read.csv("../intermediate_files/complete_HLA_rownames.csv", 
++                         header=TRUE)
+> dim(df_all_names)
+[1] 220   1
+> head(df_all_names)
+              HLA_name
+1 HLA-DPAB*02:01_04:01
+2 HLA-DQAB*05:05_06:04
+3          HLA-B*08:01
+4          HLA-A*24:02
+5          HLA-A*24:03
+6          HLA-B*38:02
+> 
+> df_high_inds = read.csv("../intermediate_files/high_HLA_index_complete.csv", 
++                         header=FALSE)
+> high_inds = df_high_inds$V1
+> 
+> # record what proportion of CMV associated TCRs under each HLA
+> # are still significant in terms of TCR-HLA p-value
+> 
+> p_cutoff = 0.001
+> 
+> n_cmv = NULL
+> n_hla = NULL
+> n_inter = NULL
+> # record the spearman correlation between two pvalues
+> spearman_corrs = NULL 
+> # record the spearman correlation between two pvalues constrained on CMV pvalue < 0.001
+> sign_spearman_corrs = NULL 
+> # record the proportoin of CMV-significant TCRs that are HLA-significant
+> # under pvalue cutoffs 0.01 and 0.001
+> prop_mat = NULL 
+> 
+> p_list = list()
+> cnt = 0
+> 
+> for (i in high_inds){
++   
++   df_row = df_hlas[which(df_hlas$ind==i),]
++   type_i = df_row$hla_type
++   relative_i = df_row$relative_ind
++   dir_i = dir_list[[type_i]]
++   cmv_pval_file = file.path(dir_i, 
++                             "results/pvals", 
++                             paste0(sprintf("pvalues_hla_index_%d.csv", i)))
++   hla_pval_file = file.path(dir_i, 
++                             "results/TCR_HLA_pvalues", 
++                             paste0(as.character(relative_i), "_TCR_HLA_pvalues.csv")) 
++   df_cmv_pval = read.csv(cmv_pval_file, header=TRUE)
++   df_hla_pval = read.csv(hla_pval_file, header=TRUE)  
++   
++   cmv_sign_tcrs = which(df_cmv_pval$pval<p_cutoff) 
++   
++   n_cmv = c(n_cmv, length(cmv_sign_tcrs))
++   n_hla = c(n_hla, sum(df_hla_pval$pval < p_cutoff))
++   n_inter = c(n_inter, 
++               sum((df_cmv_pval$pval < p_cutoff) & (df_hla_pval$pval < p_cutoff)))
++   
++   df_plot = data.frame(cmv_pval = df_cmv_pval$pval, 
++                        hla_pval = df_hla_pval$pval)
++   
++   spearman_corrs = c(spearman_corrs, 
++                      cor(df_cmv_pval$pval, 
++                          df_hla_pval$pval, 
++                          method = "spearman"))
++     
++   df_plot = df_plot[cmv_sign_tcrs, ]
++ 
++   sign_spearman_corrs = c(sign_spearman_corrs, 
++                           cor(df_plot$cmv_pval, 
++                               df_plot$hla_pval, 
++                               method = "spearman"))
++   
++   cur_vec = c(mean(df_plot$hla_pval<0.01), 
++               mean(df_plot$hla_pval<0.001))
++   
++   prop_mat = rbind(prop_mat, cur_vec)
++   
++   cnt = cnt + 1
++   
++   p_list[[cnt]] = ggplot(df_plot, aes(x = -log10(cmv_pval), y = -log10(hla_pval))) +
++                   geom_pointdensity() +
++                   scale_color_viridis() + 
++                   geom_hline(yintercept=-log10(p_cutoff), color = "grey", linetype = "dashed") + 
++                   ggtitle(paste0(df_all_names$HLA_name[i+1], "\neach point is one TCR with CMV pval <0.001", 
++                                  "\n", as.character(round(100*n_inter[length(n_inter)]/n_cmv[length(n_cmv)], digits=1)), 
++                                  "% TCRs sign with CMV still sign with HLA"))
++   
++ }
+> 
+> figure_file = file.path(fig_dir, 
++                         paste0("TCR_HLA_CMV_pvalue_scatterplots_high_indexes.pdf"))
+> 
+> n_col = 4
+> n_row = ceiling(length(p_list)/n_col)
+> 
+> pdf(file = figure_file, 
++     width = 4.5*n_col, height = 3.5*n_row+1)
+> combined_plot = ggarrange(plotlist = p_list, ncol = n_col, nrow = n_row)
+> final_plot <- annotate_figure(combined_plot,
++                               top = text_grob(paste0("Scatterplots between -log10(pvals) with CMV and with HLA\nconstrained on TCR having pval with CMV < 0.001"), 
++                                               size = 14, face = "bold"))
+> print(final_plot)
+> dev.off()    
+null device 
+          1 
+> 
+> n_inter/n_cmv
+ [1] 0.41860465 0.21428571 0.40000000 0.21666667 0.25000000 0.18750000
+ [7] 0.74193548 0.14634146 0.24691358 0.35555556 0.47826087 0.00000000
+[13] 0.04761905 0.15384615 0.78571429 0.26923077 0.14285714 0.04411765
+[19] 0.00000000 0.38888889 0.46153846 0.45833333 0.66666667 0.00000000
+[25] 0.00000000 0.47826087 0.38888889
+> 
+> df_high = data.frame(n_sign_w_CMV = n_cmv, 
++                      n_sign_w_HLA = n_hla, 
++                      n_sign_w_both = n_inter,
++                      prop_out_of_CMV = n_inter/n_cmv, 
++                      prop_out_of_HLA = n_inter/n_hla)
+> 
+> # load training individual indexes
+> df_train_index = read.csv("../intermediate_files/train_index.csv", 
++                           header=FALSE)
+> min(df_train_index$V1)
+[1] 0
+> 
+> # load full HLA matrix with split HLA-II haplotypes and NAs kepts
+> HLA_matrix = read.csv("../intermediate_files/complete_HLA_NAs_kept.csv")
+> HLA_train_subset = HLA_matrix[, (df_train_index$V1+1)]
+> 
+> HLA_known = rowSums(!is.na(HLA_train_subset))
+> HLA_pos = rowSums(HLA_train_subset==1, na.rm=TRUE)
+> 
+> table(HLA_known[high_inds+1])
+
+358 400 483 484 
+  3   8  10   6 
+> summary(HLA_pos[high_inds+1])
+   Min. 1st Qu.  Median    Mean 3rd Qu.    Max. 
+   67.0    78.0   102.0   107.3   117.0   258.0 
+> 
+> df_high$n_persons_known = HLA_known[high_inds+1]
+> df_high$n_persons_pos = HLA_pos[high_inds+1]
+> 
+> q_list = list()
+> 
+> q_list[[1]] = ggplot(df_high, aes(x = log10(n_persons_known), y = prop_out_of_CMV)) +
++   geom_pointdensity() +
++   scale_color_viridis() + 
++   ggtitle(paste0("prop of TCR sign with CMV still sign with HLA", 
++                  "\nagainst log10(train subjects \nwith status being not NA for HLA)"))
+> 
+> q_list[[2]] = ggplot(df_high, aes(x = log10(n_persons_pos), y = prop_out_of_CMV)) +
++   geom_pointdensity() +
++   scale_color_viridis() + 
++   ggtitle(paste0("prop of TCR sign with CMV still sign with HLA", 
++                  "\nagainst log10(train subjects \nhaving the HLA)"))
+> 
+> q_list[[3]] = ggplot(df_high, aes(x = log10(n_persons_known), y = log10(n_persons_pos))) +
++   geom_pointdensity() +
++   scale_color_viridis() + 
++   ggtitle(paste0("log10(train subjects having the HLA)", 
++                  "\nagainst log10(train subjects \nwith status being not NA for HLA)"))
+> 
+> figure_file = file.path(fig_dir, 
++                         paste0("prop_of_TCR_sign_with_CMV_kept_high_indexes.pdf"))
+> 
+> n_col = 2
+> n_row = ceiling(length(q_list)/n_col)
+> 
+> pdf(file = figure_file, 
++     width = 4.5*n_col, height = 3.5*n_row)
+> combined_plot = ggarrange(plotlist = q_list, ncol = n_col, nrow = n_row)
+> print(combined_plot)
+> dev.off()    
+null device 
+          1 
+> 
+> # out put these items:
+> # (1) the correlation between the CMV pvalues and HLA pvalues
+> # (2) the proportion of the CMV-significant TCRs (pvalue < 0.001) 
+> #     that are associated with the HLA at different pvalue cutoffs (0.01, 0.001)
+> 
+> summary(spearman_corrs)
+   Min. 1st Qu.  Median    Mean 3rd Qu.    Max. 
+ 0.1156  0.3721  0.4081  0.3949  0.4636  0.5403 
+> summary(sign_spearman_corrs)
+   Min. 1st Qu.  Median    Mean 3rd Qu.    Max. 
+-0.5000  0.2358  0.4705  0.4089  0.6141  0.7931 
+> 
+> row.names(prop_mat) = df_all_names$HLA_name[high_inds+1]
+> colnames(prop_mat) = c("prop_pvals_below_0.01", "prop_pvals_below_0.001")
+> write.csv(prop_mat, 
++           file = file.path(res_dir, 
++                            "Table_S3.csv"), 
++           row.names=TRUE)
+> 
+> sessionInfo()
+R version 4.4.0 (2024-04-24)
+Platform: x86_64-pc-linux-gnu
+Running under: Ubuntu 18.04.6 LTS
+
+Matrix products: default
+BLAS/LAPACK: FlexiBLAS OPENBLAS;  LAPACK version 3.11.0
+
+locale:
+ [1] LC_CTYPE=en_US.UTF-8       LC_NUMERIC=C              
+ [3] LC_TIME=en_US.UTF-8        LC_COLLATE=en_US.UTF-8    
+ [5] LC_MONETARY=en_US.UTF-8    LC_MESSAGES=en_US.UTF-8   
+ [7] LC_PAPER=en_US.UTF-8       LC_NAME=C                 
+ [9] LC_ADDRESS=C               LC_TELEPHONE=C            
+[11] LC_MEASUREMENT=en_US.UTF-8 LC_IDENTIFICATION=C       
+
+time zone: America/Los_Angeles
+tzcode source: system (glibc)
+
+attached base packages:
+[1] stats     graphics  grDevices utils     datasets  methods   base     
+
+other attached packages:
+[1] ggExtra_0.10.1       ggpointdensity_0.1.0 viridis_0.6.5       
+[4] viridisLite_0.4.2    ggpubr_0.6.0         ggrepel_0.9.6       
+[7] ggplot2_3.5.2        readxl_1.4.5        
+
+loaded via a namespace (and not attached):
+ [1] generics_0.1.4     tidyr_1.3.1        rstatix_0.7.2      digest_0.6.37     
+ [5] magrittr_2.0.3     grid_4.4.0         RColorBrewer_1.1-3 fastmap_1.2.0     
+ [9] cellranger_1.1.0   backports_1.5.0    gridExtra_2.3      promises_1.3.2    
+[13] purrr_1.0.4        scales_1.4.0       abind_1.4-8        cli_3.6.5         
+[17] shiny_1.10.0       rlang_1.1.6        cowplot_1.1.3      withr_3.0.2       
+[21] ggsignif_0.6.4     dplyr_1.1.4        httpuv_1.6.16      broom_1.0.7       
+[25] vctrs_0.6.5        R6_2.6.1           mime_0.13          lifecycle_1.0.4   
+[29] car_3.1-2          miniUI_0.1.2       pkgconfig_2.0.3    pillar_1.10.2     
+[33] later_1.4.2        gtable_0.3.6       glue_1.8.0         Rcpp_1.0.14       
+[37] tibble_3.2.1       tidyselect_1.2.1   dichromat_2.0-0.1  farver_2.1.2      
+[41] xtable_1.8-4       htmltools_0.5.8.1  labeling_0.4.3     carData_3.0-5     
+[45] compiler_4.4.0    
+> q(save = "no")
+> proc.time()
+   user  system elapsed 
+ 55.362   1.233  46.150 

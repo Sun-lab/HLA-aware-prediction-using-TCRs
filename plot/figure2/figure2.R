@@ -1,5 +1,6 @@
 
 library(ggplot2)
+library(ggpubr)
 library(dplyr)
 library(ggrepel)
 library(gridExtra)
@@ -36,12 +37,13 @@ f1_main = ggplot(df1, aes(x = agnostic_AUC, y = specific_AUC, size = size_catego
   scale_color_manual(labels =c("A/DP","B/DQ","C/DR") , values = my_colors, name = "group") +  
   scale_size_manual(
     name = "Frequency",
-    values = c("<=70" = 2, ">70" = 3),  # adjust sizes as needed
+    values = c("<=70" = 1, ">70" = 2),  # adjust sizes as needed
     labels = c("<=70", ">70")
   ) + 
   labs(x = "all AUC", y = "specific AUC", size = "train size", title = "HLA-I") +
   ylim(0.38, 1.02) + 
-  xlim(0.70, 1.02) + 
+#  xlim(0.70, 1.02) + 
+  xlim(0.38, 1.02) + 
   theme_minimal()  +
   theme(plot.title = element_text(hjust = 0.5, size = 14, face="bold"),
         axis.title.x = element_blank(),
@@ -62,12 +64,13 @@ f1_main_2 = ggplot(df2, aes(x = agnostic_AUC, y = specific_AUC, size = size_cate
   scale_color_manual(values = my_colors) +  
   scale_size_manual(
     name = "Frequency",
-    values = c("<=70" = 2, ">70" = 3),  # adjust sizes as needed
+    values = c("<=70" = 1, ">70" = 2),  # adjust sizes as needed
     labels = c("<=70", ">70")
   ) + 
   labs(x = "all AUC", y = "specific AUC", color = "group", size="size", title = "HLA-II") +
   ylim(0.38, 1.02) + 
-  xlim(0.70, 1.02) + 
+#  xlim(0.70, 1.02) + 
+  xlim(0.38, 1.02) + 
   theme_minimal()   +
   theme(plot.title = element_text(hjust = 0.5, size = 14, face="bold"),
         axis.title.x = element_blank(),
@@ -101,12 +104,20 @@ dev.off()
 
 # (B)
 
-pdf("figure2_panels/Fig2B.pdf", width = 6, height = 3)
-par(mfrow=c(1,2))
-hist(df1$prop_as_by_a, xlim = c(0, 0.26), main="HLA-I", xlab="", ylab="") 
-# xlab = "Prop of sign TCRs from HLA-agnostic model\nthat are significant under HLA-specific model")
-hist(df2$prop_as_by_a, xlim = c(0, 0.26), main="HLA-II", xlab="", ylab="") 
-# xlab = "Prop of sign TCRs from HLA-agnostic model\nthat are significant under HLA-specific model")
+pdf("figure2_panels/Fig2B.pdf", width = 2.5, height = 4.2)
+
+hist1 = ggplot(df1, aes(x=prop_as_by_a))+
+        geom_histogram(color="darkblue", fill="lightblue", bins=20) + 
+        xlim(0, 0.26) + xlab("") + ylab("") + 
+        ggtitle("HLA-I")
+hist2 = ggplot(df2, aes(x=prop_as_by_a))+
+        geom_histogram(color="darkblue", fill="lightblue", bins=20) + 
+        xlim(0, 0.26) + xlab("") + ylab("") + 
+        ggtitle("HLA-II")
+
+combined_plot = ggarrange(hist1, hist2, ncol = 1, nrow = 2)
+print(combined_plot)
+
 dev.off()
 
 # (C) 

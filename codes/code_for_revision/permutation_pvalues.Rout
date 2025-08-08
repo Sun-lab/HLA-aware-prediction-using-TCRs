@@ -1,0 +1,208 @@
+
+R version 4.4.0 (2024-04-24) -- "Puppy Cup"
+Copyright (C) 2024 The R Foundation for Statistical Computing
+Platform: x86_64-pc-linux-gnu
+
+R is free software and comes with ABSOLUTELY NO WARRANTY.
+You are welcome to redistribute it under certain conditions.
+Type 'license()' or 'licence()' for distribution details.
+
+  Natural language support but running in an English locale
+
+R is a collaborative project with many contributors.
+Type 'contributors()' for more information and
+'citation()' on how to cite R or R packages in publications.
+
+Type 'demo()' for some demos, 'help()' for on-line help, or
+'help.start()' for an HTML browser interface to help.
+Type 'q()' to quit R.
+
+> 
+> library(readxl)
+> 
+> df_table_i = read_excel("/fh/fast/sun_w/si_liu/fding/tables/Table_S1.xlsx", sheet = "HLA I")
+> df_table_i = as.data.frame(df_table_i)
+> head(df_table_i)
+          HLA HLA_specific_AUC HLA_ignorant_AUC Training_Size
+1 HLA-B*08:01        0.9469697        0.9469697           115
+2 HLA-A*24:02        0.7545455        0.9181818           102
+3 HLA-B*51:01        0.7462787        0.8352028            48
+4 HLA-B*57:01        1.0000000        1.0000000            27
+5 HLA-A*23:01        0.5000000        0.7500000            19
+6 HLA-B*15:17        0.5000000        1.0000000             2
+  Significant_TCR_prop   KNN_AUC KNN_training_size KNN_Significant_TCR_prop
+1           0.15357143 0.9318182               115                0.7285714
+2           0.05000000 0.7545455               124                0.8928571
+3           0.01576710 0.6391093                55                0.4581343
+4           0.01071429 0.8888889                39                0.3357143
+5           0.00000000 0.6250000               121                0.6357143
+6           0.00000000 0.5000000                 2                0.0000000
+  HLA_group HLA_name
+1         B  B*08:01
+2         A  A*24:02
+3         B  B*51:01
+4         B  B*57:01
+5         A  A*23:01
+6         B  B*15:17
+> 
+> df_table_ii = read_excel("/fh/fast/sun_w/si_liu/fding/tables/Table_S1.xlsx", sheet = "HLA II")
+> df_table_ii = as.data.frame(df_table_ii)
+> head(df_table_ii)
+                   HLA HLA_specific_AUC HLA_ignorant_AUC Training_Size
+1 HLA-DQAB*05:05_03:01        0.7337662        0.9090909            82
+2       HLA-DRB1*16:01        0.5000000        1.0000000             7
+3 HLA-DQAB*03:03_03:01        0.5713404        0.9671958            40
+4 HLA-DQAB*02:01_03:01        0.8750000        0.8333333            21
+5 HLA-DQAB*03:03_06:02        0.5000000        1.0000000             7
+6 HLA-DQAB*02:01_03:03        1.0000000        0.9166667            32
+  Significant_TCR_prop   KNN_AUC KNN_training_size KNN_Significant_TCR_prop
+1          0.035714286 0.6883117                99               0.47857143
+2          0.000000000 0.5000000                21               0.01428571
+3          0.011405530 0.8895944               122               0.42894918
+4          0.003571429 0.5833333                89               1.34642857
+5          0.000000000 1.0000000                60               0.30357143
+6          0.014285714 0.6666667                54               0.66785714
+  HLA_group         HLA_name
+1        DQ DQAB*05:05_03:01
+2        DR       DRB1*16:01
+3        DQ DQAB*03:03_03:01
+4        DQ DQAB*02:01_03:01
+5        DQ DQAB*03:03_06:02
+6        DQ DQAB*02:01_03:03
+> 
+> df_hla_i_names = read.csv("/fh/fast/sun_w/si_liu/fding/feng_code/HLA_I_names.csv", header=TRUE)
+> df_hla_ii_names = read.csv("/fh/fast/sun_w/si_liu/fding/feng_code/HLA_II_names.csv", header=TRUE)
+> 
+> df_hla_i_index = read.csv("/fh/fast/sun_w/si_liu/fding/specific_HLA_pred/data_files/AA_HLA_index.csv", header=FALSE)
+> df_hla_ii_index = read.csv("/fh/fast/sun_w/si_liu/fding/specific_HLA_II_pred/data_files/HLA_II_index.csv", header=FALSE)
+> 
+> hla_i_dir = "/fh/fast/sun_w/si_liu/fding/specific_HLA_pred/results/permutation_aucs"
+> hla_ii_dir = "/fh/fast/sun_w/si_liu/fding/specific_HLA_II_pred/results/permutation_aucs"
+> 
+> six_hla_names = NULL
+> six_pvalues = NULL
+> 
+> hla_i_inds = c(23)
+> 
+> for (hla_i in hla_i_inds){
++   hla_name = df_hla_i_names$x[hla_i+1]
++   real_auc = df_table_i$HLA_specific_AUC[which(df_table_i$HLA==hla_name)]
++   
++   permute_aucs = NULL
++   for (j in 0:99){
++     df_j  = read.csv(file.path(hla_i_dir, 
++                                paste0("hla_index_", as.character(hla_i)), 
++                                paste0(as.character(hla_i), "_", as.character(j), "_chunk_res.csv")), 
++                      header=TRUE)
++     permute_aucs = c(permute_aucs, df_j$permutation_auc)
++   }
++   print(real_auc)
++   print(summary(permute_aucs))
++   stopifnot(sum(permute_aucs==-1)==0)
++   pvalue_auc = mean(permute_aucs>=real_auc)
++   print(sum(is.na(permute_aucs)))
++   print(paste0(hla_name, " permutation p-value: ", as.character(pvalue_auc)))
++   
++   six_hla_names = c(six_hla_names, hla_name)
++   six_pvalues = c(six_pvalues, pvalue_auc)
++   
++ }
+[1] 0.9625
+   Min. 1st Qu.  Median    Mean 3rd Qu.    Max. 
+ 0.2250  0.5333  0.6042  0.6050  0.6771  0.9667 
+[1] 0
+[1] "HLA-C*07:02 permutation p-value: 2e-04"
+> 
+> 
+> hla_ii_inds = c(21, 28, 33, 65, 130)
+> 
+> for (hla_ii in hla_ii_inds){
++   hla_name = df_hla_ii_names$x[hla_ii+1]
++   real_auc = df_table_ii$HLA_specific_AUC[which(df_table_ii$HLA==hla_name)]
++   
++   permute_aucs = NULL
++   for (j in 0:99){
++     df_j  = read.csv(file.path(hla_ii_dir, 
++                                paste0("hla_index_", as.character(hla_ii)), 
++                                paste0(as.character(hla_ii), "_", as.character(j), "_chunk_res.csv")), 
++                      header=TRUE)
++     permute_aucs = c(permute_aucs, df_j$permutation_auc)
++   }
++   print(real_auc)
++   print(summary(permute_aucs))
++   stopifnot(sum(permute_aucs==-1)==0)
++   pvalue_auc = mean(permute_aucs>=real_auc)
++   print(sum(is.na(permute_aucs)))
++   print(paste0(hla_name, " permutation p-value: ", as.character(pvalue_auc)))
++ 
++   six_hla_names = c(six_hla_names, hla_name)
++   six_pvalues = c(six_pvalues, pvalue_auc)
++   
++ }
+[1] 0.9946524
+   Min. 1st Qu.  Median    Mean 3rd Qu.    Max. 
+ 0.1751  0.4866  0.5615  0.5830  0.6711  0.9492 
+[1] 0
+[1] "HLA-DRB1*07:01 permutation p-value: 0"
+[1] 0.961039
+   Min. 1st Qu.  Median    Mean 3rd Qu.    Max. 
+0.01299 0.41558 0.50649 0.50994 0.59740 0.98701 
+[1] 0
+[1] "HLA-DQAB*01:01_05:01 permutation p-value: 4e-04"
+[1] 0.98
+   Min. 1st Qu.  Median    Mean 3rd Qu.    Max. 
+ 0.0800  0.4800  0.5750  0.5729  0.6700  1.0000 
+[1] 0
+[1] "HLA-DRB1*03:01 permutation p-value: 4e-04"
+[1] 0.9255952
+   Min. 1st Qu.  Median    Mean 3rd Qu.    Max. 
+0.09524 0.46429 0.51786 0.53365 0.60119 0.94048 
+[1] 0
+[1] "HLA-DQAB*02:01_02:02 permutation p-value: 4e-04"
+[1] 0.98
+   Min. 1st Qu.  Median    Mean 3rd Qu.    Max. 
+ 0.0800  0.4800  0.5750  0.5729  0.6700  1.0000 
+[1] 0
+[1] "HLA-DQAB*05:01_02:01 permutation p-value: 4e-04"
+> 
+> df_output = data.frame(hla_name = six_hla_names, 
++                        pvalue = six_pvalues)
+> 
+> write.csv(df_output, 
++           file = "../tables/Table_S2.csv", 
++           row.names=FALSE)
+> 
+> 
+> sessionInfo()
+R version 4.4.0 (2024-04-24)
+Platform: x86_64-pc-linux-gnu
+Running under: Ubuntu 18.04.6 LTS
+
+Matrix products: default
+BLAS/LAPACK: FlexiBLAS OPENBLAS;  LAPACK version 3.11.0
+
+locale:
+ [1] LC_CTYPE=en_US.UTF-8       LC_NUMERIC=C              
+ [3] LC_TIME=en_US.UTF-8        LC_COLLATE=en_US.UTF-8    
+ [5] LC_MONETARY=en_US.UTF-8    LC_MESSAGES=en_US.UTF-8   
+ [7] LC_PAPER=en_US.UTF-8       LC_NAME=C                 
+ [9] LC_ADDRESS=C               LC_TELEPHONE=C            
+[11] LC_MEASUREMENT=en_US.UTF-8 LC_IDENTIFICATION=C       
+
+time zone: America/Los_Angeles
+tzcode source: system (glibc)
+
+attached base packages:
+[1] stats     graphics  grDevices utils     datasets  methods   base     
+
+other attached packages:
+[1] readxl_1.4.5
+
+loaded via a namespace (and not attached):
+ [1] compiler_4.4.0   magrittr_2.0.3   cli_3.6.5        tools_4.4.0     
+ [5] pillar_1.10.2    glue_1.8.0       tibble_3.2.1     cellranger_1.1.0
+ [9] vctrs_0.6.5      lifecycle_1.0.4  pkgconfig_2.0.3  rlang_1.1.6     
+> q(save = "no")
+> proc.time()
+   user  system elapsed 
+  0.918   0.509   2.485 

@@ -25,7 +25,7 @@ def read_in_data(data_path):
 
 
 
-def get_fisher_data(training_index, TCR):
+def get_fisher_data(training_index, TCR, CMV):
     cardi = len(TCR)
     oneone_vec = np.zeros(cardi)
     onezero_vec = np.zeros(cardi)
@@ -83,42 +83,60 @@ def make_pred(TCR, important_index, test_individuals):
     return prediction_probs
 
 
-def constrained_pred(target_HLA, CMV, test_indexes, pred_probs):
+def constrained_pred(target_HLA, CMV, test_indexes, pred_probs, roc_path):
     test_indexes = np.array(test_indexes)
-    AUC = []
+    Aucs = []
     for HLA_i in target_HLA:
         position_index = np.arange( len(HLA[HLA_i][test_indexes]) )
         HLA_i_test_index = test_indexes[ HLA[HLA_i][test_indexes] != 0 ]
         position_index_pred = position_index[ HLA[HLA_i][test_indexes] != 0  ]
-        try:
+        if len(HLA_i_test_index)<=1:
+            Auc_i = np.nan
+        elif len(set(CMV[HLA_i_test_index]))==1:
+            Auc_i = np.nan
+        else:
             Auc_i = metrics.roc_auc_score( CMV[ HLA_i_test_index ], pred_probs[position_index_pred] )
-        except ValueError:
-            Auc_i = -1
-        AUC.append(Auc_i)
-    return np.array(AUC)
+            roc_filename = os.path.join(roc_path, f"roc_related_{HLA_i}.csv")
+            true_labels = CMV[ HLA_i_test_index ]
+            pred_numeric = pred_probs[position_index_pred]
+            df_roc = pd.DataFrame(list(zip(true_labels.tolist(), pred_numeric.tolist())), 
+                                  columns=["label", "prediction"])
+            df_roc.to_csv(roc_filename, index=False, na_rep="NA")
+        Aucs.append(Auc_i)
+    return Aucs
 
 
 
-def work_wrapper(TCR, CMV, train_index, test_index, type1_error):
-    cardi = len(TCR)
-    HLAs = np.arrange(220)
-    oneone_vec = np.zeros(cardi)
-    onezero_vec = np.zeros(cardi)
-    zeroone_vec = np.zeros(cardi)
-    zerozero_vec = np.zeros(cardi)
-    oneone_vec, onezero_vec, zeroone_vec, zerozero_vec = get_fisher_data(train_index, TCR)
+def work_wrapper(TCR, HLA, CMV, train_index, test_index, type1_error, roc_path):
+    HLAs = np.arange(220)
+    oneone_vec, onezero_vec, zeroone_vec, zerozero_vec = get_fisher_data(train_index, TCR, CMV)
     p_vals = asso_test(oneone_vec, onezero_vec,zeroone_vec, zerozero_vec)
     significant_TCR_index, signi_TCR_pvals = filter_p_vals(type1_error, p_vals)
     pred_probs = make_pred(TCR, significant_TCR_index, test_index )
-    Auc = constrained_pred(HLAs, CMV, test_index, pred_probs)
-    return Auc
+    Aucs = constrained_pred(HLAs, CMV, test_index, pred_probs, roc_path)
+    return Aucs
 
 
 
 if __name__ == "__main__":
+
     data_path = "../intermediate_files/"
+    res_path ="./results" 
+    roc_path ="./results/roc_related"
+    os.makedirs(res_path, exist_ok=True)
+    os.makedirs(roc_path, exist_ok=True)
+
     type1_error = 0.001
-    TCR, CMV, train_index, test_index = read_in_data(data_path)
-    res = work_wrapper(TCR, CMV, train_index, test_index, type1_error)
-    np.savetxt("HLA_ignorant_specifc_res.csv", res)
+
+    TCR, HLA, CMV, train_index, test_index = read_in_data(data_path)
+    Aucs = work_wrapper(TCR, HLA, CMV, train_index, test_index, type1_error, roc_path)
+
+    assert HLA.shape[0]==len(Aucs), "number of HLAs do not match between HLA matrix and AUC list"
+
+    auc_filename = os.path.join(res_path, "specific_aucs.csv")
+
+    df_auc = pd.DataFrame(list(zip(list(range(HLA.shape[0])), Aucs)), 
+                          columns=['HLA_index', 'AUC'])
+    df_auc.to_csv(auc_filename, index=False, na_rep="NA")
+
 

@@ -1,31 +1,48 @@
-specific_HLA_pred, specific_HLA_II_pred
-
-	split the 85 HLAs to 9 chunks, run them by parallele jobs, sample_ids.txt
-
-	specific_HLA_pred.py is the main code. 
 
 
-all_sample_pred
+HLA_agnostic_model
 
 	HLA agnostic model
 
-	all_sample_pred.py: the main code to run the prediction using all samples. 
+HLA_agnostic_model_split
 
-	diff_pvals.py: use different p-value cutoffs.
-		constrained_pred make prediction only for the individuals with a specific HLA. 
+	For the HLAs with frequency in [40, 70], get predictions based on HLA agnostic models run on 10 training/test splits
+
+HLA_specific_model_HLA_I
+HLA_specific_model_HLA_II
+HLA_specific_model_split
+
+	HLA specific model, for HLA-I alleles, HLA-II alleles, and the HLAs with frequency in [40, 70]
+	Also part of code files related to permutation tests and pvalues between TCR and HLA related to revision
+
+combined_HLA_model
+combined_HLA_model_split
+
+	combined HLA model, for all HLAs, and the HLAs with frequency in [40, 70]
+
+weighted_HLA_I
+weighted_HLA_II
+weighted_HLA_split
+
+	KNN model, for HLA-I alleles, HLA-II alleles, and the HLAs with frequency in [40, 70]
+
+HLA_CMV_association
+
+	Association between HLA and CMV
+
+code_for_data
+
+	Code files to generate the intermediate data files for running models
+
+code_for_tables
+
+	Code files to generate tables
+
+code_for_revision
+
+	Code files related to revision
 
 
-all_model_split
-	
-	For HLA with sample size between 40 and 70, we spllit the data multiple times and try to average or aggregate the results
 
-weighted_pred, weighted_pred_HLAII
-	
-	KNN prediction when we weight the HLAs based on their similarity to the HLA of interest 
 
-	In the result files, all the p-values are ordered the same as the TCRs in the file TCR.txt. 
-
-knn_split, 
-	for those HLA with sample size between 40 and 70,
-	it is slow to run
 

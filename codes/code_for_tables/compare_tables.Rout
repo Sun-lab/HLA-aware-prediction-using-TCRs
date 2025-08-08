@@ -1,0 +1,141 @@
+
+R version 4.4.0 (2024-04-24) -- "Puppy Cup"
+Copyright (C) 2024 The R Foundation for Statistical Computing
+Platform: x86_64-pc-linux-gnu
+
+R is free software and comes with ABSOLUTELY NO WARRANTY.
+You are welcome to redistribute it under certain conditions.
+Type 'license()' or 'licence()' for distribution details.
+
+  Natural language support but running in an English locale
+
+R is a collaborative project with many contributors.
+Type 'contributors()' for more information and
+'citation()' on how to cite R or R packages in publications.
+
+Type 'demo()' for some demos, 'help()' for on-line help, or
+'help.start()' for an HTML browser interface to help.
+Type 'q()' to quit R.
+
+> # compare the new and old table S1 in terms of overlapped HLAs
+> 
+> library("readxl")
+> 
+> new_HLA_I <- read_excel("../result_tables/Table_S1.xlsx", sheet = "HLA I")
+> new_HLA_II <- read_excel("../result_tables/Table_S1.xlsx", sheet = "HLA II")
+> 
+> old_HLA_I <- read_excel("../old_table/Table_S1.xlsx", sheet = "HLA I")
+> old_HLA_II <- read_excel("../old_table/Table_S1.xlsx", sheet = "HLA II")
+> 
+> dim(old_HLA_I)
+[1] 36 10
+> dim(old_HLA_II)
+[1] 55 10
+> 
+> old_HLA_I_matched = old_HLA_I[match(new_HLA_I$HLA, old_HLA_I$HLA),]
+> old_HLA_II_matched = old_HLA_II[match(new_HLA_II$HLA, old_HLA_II$HLA),]
+> 
+> new_HLA_I_false = new_HLA_I[new_HLA_I$run_10splits==FALSE,]
+> new_HLA_II_false = new_HLA_II[new_HLA_II$run_10splits==FALSE,]
+> 
+> old_HLA_I_matched_false = old_HLA_I_matched[new_HLA_I$run_10splits==FALSE,]
+> old_HLA_II_matched_false = old_HLA_II_matched[new_HLA_II$run_10splits==FALSE,]
+> 
+> summary(abs(new_HLA_I_false$agnostic_AUC - old_HLA_I_matched_false$HLA_ignorant_AUC))
+   Min. 1st Qu.  Median    Mean 3rd Qu.    Max.    NA's 
+      0       0       0       0       0       0       3 
+> summary(abs(new_HLA_I_false$specific_AUC - old_HLA_I_matched_false$HLA_specific_AUC))
+   Min. 1st Qu.  Median    Mean 3rd Qu.    Max.    NA's 
+      0       0       0       0       0       0       3 
+> summary(abs(new_HLA_I_false$specific_training_size - old_HLA_I_matched_false$Training_Size))
+   Min. 1st Qu.  Median    Mean 3rd Qu.    Max.    NA's 
+      0       0       0       0       0       0       3 
+> summary(abs(new_HLA_I_false$knn_AUC - old_HLA_I_matched_false$KNN_AUC))
+   Min. 1st Qu.  Median    Mean 3rd Qu.    Max.    NA's 
+      0       0       0       0       0       0       3 
+> summary(abs(new_HLA_I_false$knn_training_size - old_HLA_I_matched_false$KNN_training_size))
+   Min. 1st Qu.  Median    Mean 3rd Qu.    Max.    NA's 
+      0       0       0       0       0       0       3 
+> 
+> summary(abs(new_HLA_II_false$agnostic_AUC - old_HLA_II_matched_false$HLA_ignorant_AUC))
+   Min. 1st Qu.  Median    Mean 3rd Qu.    Max. 
+      0       0       0       0       0       0 
+> summary(abs(new_HLA_II_false$specific_AUC - old_HLA_II_matched_false$HLA_specific_AUC))
+   Min. 1st Qu.  Median    Mean 3rd Qu.    Max. 
+      0       0       0       0       0       0 
+> summary(abs(new_HLA_II_false$specific_training_size - old_HLA_II_matched_false$Training_Size))
+   Min. 1st Qu.  Median    Mean 3rd Qu.    Max. 
+      0       0       0       0       0       0 
+> summary(abs(new_HLA_II_false$knn_AUC - old_HLA_II_matched_false$KNN_AUC))
+   Min. 1st Qu.  Median    Mean 3rd Qu.    Max. 
+      0       0       0       0       0       0 
+> summary(abs(new_HLA_II_false$knn_training_size - old_HLA_II_matched_false$KNN_training_size))
+   Min. 1st Qu.  Median    Mean 3rd Qu.    Max. 
+      0       0       0       0       0       0 
+> 
+> ready_HLA_I <- read.csv("../../plot/HLA_I_ready_data.csv", header=TRUE)
+> ready_HLA_II <- read.csv("../../plot/HLA_II_ready_data.csv", header=TRUE)
+> 
+> dim(ready_HLA_I)
+[1] 21  9
+> dim(ready_HLA_II)
+[1] 20  9
+> 
+> ready_HLA_I_matched = ready_HLA_I[match(new_HLA_I$HLA, ready_HLA_I$HLA),]
+> ready_HLA_II_matched = ready_HLA_II[match(new_HLA_II$HLA, ready_HLA_II$HLA),]
+> 
+> ready_HLA_I_matched = ready_HLA_I[match(new_HLA_I$HLA, ready_HLA_I$HLA),]
+> ready_HLA_II_matched = ready_HLA_II[match(new_HLA_II$HLA, ready_HLA_II$HLA),]
+> 
+> ready_HLA_I_matched_false = ready_HLA_I_matched[new_HLA_I$run_10splits==FALSE,]
+> ready_HLA_II_matched_false = ready_HLA_II_matched[new_HLA_II$run_10splits==FALSE,]
+> 
+> table(new_HLA_I_false$HLA==ready_HLA_I_matched_false$HLA, useNA="ifany")
+
+TRUE <NA> 
+  12    1 
+> table(new_HLA_II_false$HLA==ready_HLA_II_matched_false$HLA, useNA="ifany")
+
+TRUE 
+  14 
+> 
+> summary(abs(new_HLA_I_false$combined_AUC - ready_HLA_I_matched_false$Combined_AUC))
+   Min. 1st Qu.  Median    Mean 3rd Qu.    Max.    NA's 
+      0       0       0       0       0       0       1 
+> summary(abs(new_HLA_II_false$combined_AUC - ready_HLA_II_matched_false$Combined_AUC))
+   Min. 1st Qu.  Median    Mean 3rd Qu.    Max. 
+      0       0       0       0       0       0 
+> 
+> sessionInfo()
+R version 4.4.0 (2024-04-24)
+Platform: x86_64-pc-linux-gnu
+Running under: Ubuntu 18.04.6 LTS
+
+Matrix products: default
+BLAS/LAPACK: FlexiBLAS OPENBLAS;  LAPACK version 3.11.0
+
+locale:
+ [1] LC_CTYPE=en_US.UTF-8       LC_NUMERIC=C              
+ [3] LC_TIME=en_US.UTF-8        LC_COLLATE=en_US.UTF-8    
+ [5] LC_MONETARY=en_US.UTF-8    LC_MESSAGES=en_US.UTF-8   
+ [7] LC_PAPER=en_US.UTF-8       LC_NAME=C                 
+ [9] LC_ADDRESS=C               LC_TELEPHONE=C            
+[11] LC_MEASUREMENT=en_US.UTF-8 LC_IDENTIFICATION=C       
+
+time zone: America/Los_Angeles
+tzcode source: system (glibc)
+
+attached base packages:
+[1] stats     graphics  grDevices utils     datasets  methods   base     
+
+other attached packages:
+[1] readxl_1.4.5
+
+loaded via a namespace (and not attached):
+ [1] compiler_4.4.0   magrittr_2.0.3   cli_3.6.5        tools_4.4.0     
+ [5] pillar_1.10.2    glue_1.8.0       tibble_3.2.1     cellranger_1.1.0
+ [9] vctrs_0.6.5      lifecycle_1.0.4  pkgconfig_2.0.3  rlang_1.1.6     
+> q(save = "no")
+> proc.time()
+   user  system elapsed 
+  0.599   0.448   1.592 

@@ -1,0 +1,98 @@
+
+R version 4.4.0 (2024-04-24) -- "Puppy Cup"
+Copyright (C) 2024 The R Foundation for Statistical Computing
+Platform: x86_64-pc-linux-gnu
+
+R is free software and comes with ABSOLUTELY NO WARRANTY.
+You are welcome to redistribute it under certain conditions.
+Type 'license()' or 'licence()' for distribution details.
+
+  Natural language support but running in an English locale
+
+R is a collaborative project with many contributors.
+Type 'contributors()' for more information and
+'citation()' on how to cite R or R packages in publications.
+
+Type 'demo()' for some demos, 'help()' for on-line help, or
+'help.start()' for an HTML browser interface to help.
+Type 'q()' to quit R.
+
+> library(Matrix)
+> library(pROC)
+Type 'citation("pROC")' for a citation.
+
+Attaching package: ‘pROC’
+
+The following objects are masked from ‘package:stats’:
+
+    cov, smooth, var
+
+> 
+> setwd("./")
+> TCR_path = "../../data/Emerson_2017/TCR_data.rds"
+> HLA_path = "../../data/DeWitt_2018/HLA_v2_CMV_data.rds"
+> dest_TCR_path = "../intermediate_files/TCR.txt"
+> dest_HLA_path = "../intermediate_files/HLA.txt"
+> dest_CMV_path = "../intermediate_files/CMV.txt"
+> dest_TCR_name_path = "../intermediate_files/TCR_names.csv"
+> 
+> 
+> # HLA & CMV 
+> HLA  = readRDS(HLA_path)
+> HLA_no_NA = HLA[,!is.na(HLA[216,])]
+> HLA_only = HLA_no_NA[1:215,]
+> CMV = HLA_no_NA[216,]
+> 
+> # missing info treated as not having
+> # this is OK for getting TCR-CMV association constrained on individuals with the HLA
+> # HLA-CMV association needs to use the complete HLA info including the NAs for HLAs
+> HLA_only[is.na(HLA_only)] <- 0
+> 
+> # TCR
+> TCR = readRDS(TCR_path)
+> TCR_no_NA = TCR[,!is.na(HLA[216,])]
+> 
+> HLA_sparse = Matrix(HLA_only, sparse = TRUE)
+> writeMM(TCR_no_NA, file = dest_TCR_path)
+NULL
+> writeMM(HLA_sparse, file = dest_HLA_path)
+NULL
+> write.csv(CMV, file = dest_CMV_path)
+> 
+> df_TCR_names = data.frame(TCR_name = row.names(TCR))
+> write.csv(df_TCR_names, 
++           file = dest_TCR_name_path, 
++           row.names = FALSE)
+> 
+> 
+> sessionInfo()
+R version 4.4.0 (2024-04-24)
+Platform: x86_64-pc-linux-gnu
+Running under: Ubuntu 18.04.6 LTS
+
+Matrix products: default
+BLAS/LAPACK: FlexiBLAS OPENBLAS;  LAPACK version 3.11.0
+
+locale:
+ [1] LC_CTYPE=en_US.UTF-8       LC_NUMERIC=C              
+ [3] LC_TIME=en_US.UTF-8        LC_COLLATE=en_US.UTF-8    
+ [5] LC_MONETARY=en_US.UTF-8    LC_MESSAGES=en_US.UTF-8   
+ [7] LC_PAPER=en_US.UTF-8       LC_NAME=C                 
+ [9] LC_ADDRESS=C               LC_TELEPHONE=C            
+[11] LC_MEASUREMENT=en_US.UTF-8 LC_IDENTIFICATION=C       
+
+time zone: America/Los_Angeles
+tzcode source: system (glibc)
+
+attached base packages:
+[1] stats     graphics  grDevices utils     datasets  methods   base     
+
+other attached packages:
+[1] pROC_1.18.5  Matrix_1.7-1
+
+loaded via a namespace (and not attached):
+[1] compiler_4.4.0 plyr_1.8.9     Rcpp_1.0.14    grid_4.4.0     lattice_0.22-6
+> q(save = "no")
+> proc.time()
+   user  system elapsed 
+  6.659   0.850   8.263 

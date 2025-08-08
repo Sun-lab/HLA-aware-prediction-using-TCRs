@@ -1,0 +1,288 @@
+
+R version 4.4.0 (2024-04-24) -- "Puppy Cup"
+Copyright (C) 2024 The R Foundation for Statistical Computing
+Platform: x86_64-pc-linux-gnu
+
+R is free software and comes with ABSOLUTELY NO WARRANTY.
+You are welcome to redistribute it under certain conditions.
+Type 'license()' or 'licence()' for distribution details.
+
+  Natural language support but running in an English locale
+
+R is a collaborative project with many contributors.
+Type 'contributors()' for more information and
+'citation()' on how to cite R or R packages in publications.
+
+Type 'demo()' for some demos, 'help()' for on-line help, or
+'help.start()' for an HTML browser interface to help.
+Type 'q()' to quit R.
+
+> # run pROC/roc.test for HLAs with population frequency greater than 70
+> 
+> library(pROC)
+Type 'citation("pROC")' for a citation.
+
+Attaching package: ‘pROC’
+
+The following objects are masked from ‘package:stats’:
+
+    cov, smooth, var
+
+> 
+> df_high = read.csv("../intermediate_files/high_HLA_index_complete.csv", 
++                    header=FALSE)
+> dim(df_high)
+[1] 27  1
+> head(df_high)
+  V1
+1  2
+2  3
+3 11
+4 19
+5 34
+6 36
+> 
+> high_ids = df_high$V1
+> 
+> df_hla_names = read.csv("../intermediate_files/complete_HLA_rownames.csv", 
++                         header=TRUE)
+> hlas = df_hla_names$HLA_name
+> 
+> auc_combined = rep(NA, nrow(df_high))
+> auc_agnostic = rep(NA, nrow(df_high))
+> DeLong_pvalues = rep(NA, nrow(df_high))
+> 
+> cnt = 0
+> 
+> for (i in high_ids){
++   
++   print(sprintf("HLA index %d", i))
++   
++   cnt = cnt + 1
++   
++   df_roc_combined = read.csv(file.path("../combined_HLA_model/results/roc_related", 
++                                        sprintf("roc_related_%d.csv", i)), header=TRUE)
++   roc_combined = roc(df_roc_combined$label, df_roc_combined$prediction)
++   auc_combined[cnt] = auc(roc_combined)
++   
++   df_roc_agnostic = read.csv(file.path("../HLA_agnostic_model/results/roc_related", 
++                                        sprintf("roc_related_%d.csv", i)), header=TRUE)
++   roc_agnostic = roc(df_roc_agnostic$label, df_roc_agnostic$prediction)    
++   auc_agnostic[cnt] = auc(roc_agnostic)
++   
++   roc.test(roc_combined, roc_agnostic, alternative="greater")$p.value
++   
++ 
++   DeLong_pvalues[cnt] = roc.test(roc_combined, roc_agnostic, alternative="greater")$p.value
++   
++ }
+[1] "HLA index 2"
+Setting levels: control = 0, case = 1
+Setting direction: controls < cases
+Setting levels: control = 0, case = 1
+Setting direction: controls < cases
+[1] "HLA index 3"
+Setting levels: control = 0, case = 1
+Setting direction: controls < cases
+Setting levels: control = 0, case = 1
+Setting direction: controls < cases
+[1] "HLA index 11"
+Setting levels: control = 0, case = 1
+Setting direction: controls < cases
+Setting levels: control = 0, case = 1
+Setting direction: controls < cases
+[1] "HLA index 19"
+Setting levels: control = 0, case = 1
+Setting direction: controls < cases
+Setting levels: control = 0, case = 1
+Setting direction: controls < cases
+[1] "HLA index 34"
+Setting levels: control = 0, case = 1
+Setting direction: controls < cases
+Setting levels: control = 0, case = 1
+Setting direction: controls < cases
+[1] "HLA index 36"
+Setting levels: control = 0, case = 1
+Setting direction: controls < cases
+Setting levels: control = 0, case = 1
+Setting direction: controls < cases
+[1] "HLA index 38"
+Setting levels: control = 0, case = 1
+Setting direction: controls < cases
+Setting levels: control = 0, case = 1
+Setting direction: controls < cases
+[1] "HLA index 50"
+Setting levels: control = 0, case = 1
+Setting direction: controls < cases
+Setting levels: control = 0, case = 1
+Setting direction: controls < cases
+[1] "HLA index 51"
+Setting levels: control = 0, case = 1
+Setting direction: controls < cases
+Setting levels: control = 0, case = 1
+Setting direction: controls < cases
+[1] "HLA index 53"
+Setting levels: control = 0, case = 1
+Setting direction: controls < cases
+Setting levels: control = 0, case = 1
+Setting direction: controls < cases
+[1] "HLA index 60"
+Setting levels: control = 0, case = 1
+Setting direction: controls < cases
+Setting levels: control = 0, case = 1
+Setting direction: controls < cases
+[1] "HLA index 68"
+Setting levels: control = 0, case = 1
+Setting direction: controls < cases
+Setting levels: control = 0, case = 1
+Setting direction: controls < cases
+[1] "HLA index 79"
+Setting levels: control = 0, case = 1
+Setting direction: controls < cases
+Setting levels: control = 0, case = 1
+Setting direction: controls < cases
+[1] "HLA index 100"
+Setting levels: control = 0, case = 1
+Setting direction: controls < cases
+Setting levels: control = 0, case = 1
+Setting direction: controls < cases
+[1] "HLA index 106"
+Setting levels: control = 0, case = 1
+Setting direction: controls < cases
+Setting levels: control = 0, case = 1
+Setting direction: controls < cases
+[1] "HLA index 112"
+Setting levels: control = 0, case = 1
+Setting direction: controls < cases
+Setting levels: control = 0, case = 1
+Setting direction: controls < cases
+[1] "HLA index 114"
+Setting levels: control = 0, case = 1
+Setting direction: controls < cases
+Setting levels: control = 0, case = 1
+Setting direction: controls < cases
+[1] "HLA index 124"
+Setting levels: control = 0, case = 1
+Setting direction: controls < cases
+Setting levels: control = 0, case = 1
+Setting direction: controls < cases
+[1] "HLA index 125"
+Setting levels: control = 0, case = 1
+Setting direction: controls < cases
+Setting levels: control = 0, case = 1
+Setting direction: controls < cases
+[1] "HLA index 131"
+Setting levels: control = 0, case = 1
+Setting direction: controls < cases
+Setting levels: control = 0, case = 1
+Setting direction: controls < cases
+[1] "HLA index 132"
+Setting levels: control = 0, case = 1
+Setting direction: controls < cases
+Setting levels: control = 0, case = 1
+Setting direction: controls < cases
+[1] "HLA index 163"
+Setting levels: control = 0, case = 1
+Setting direction: controls < cases
+Setting levels: control = 0, case = 1
+Setting direction: controls < cases
+[1] "HLA index 167"
+Setting levels: control = 0, case = 1
+Setting direction: controls < cases
+Setting levels: control = 0, case = 1
+Setting direction: controls < cases
+[1] "HLA index 184"
+Setting levels: control = 0, case = 1
+Setting direction: controls < cases
+Setting levels: control = 0, case = 1
+Setting direction: controls < cases
+[1] "HLA index 185"
+Setting levels: control = 0, case = 1
+Setting direction: controls < cases
+Setting levels: control = 0, case = 1
+Setting direction: controls < cases
+[1] "HLA index 215"
+Setting levels: control = 0, case = 1
+Setting direction: controls < cases
+Setting levels: control = 0, case = 1
+Setting direction: controls < cases
+[1] "HLA index 219"
+Setting levels: control = 0, case = 1
+Setting direction: controls < cases
+Setting levels: control = 0, case = 1
+Setting direction: controls < cases
+Warning messages:
+1: In roc.test.roc(roc_combined, roc_agnostic, alternative = "greater") :
+  roc.test() of two ROC curves with AUC == 1 has always p.value = 1 and can be misleading.
+2: In roc.test.roc(roc_combined, roc_agnostic, alternative = "greater") :
+  roc.test() of two ROC curves with AUC == 1 has always p.value = 1 and can be misleading.
+3: In roc.test.roc(roc_combined, roc_agnostic, alternative = "greater") :
+  roc.test() of two ROC curves with AUC == 1 has always p.value = 1 and can be misleading.
+4: In roc.test.roc(roc_combined, roc_agnostic, alternative = "greater") :
+  roc.test() of two ROC curves with AUC == 1 has always p.value = 1 and can be misleading.
+5: In roc.test.roc(roc_combined, roc_agnostic, alternative = "greater") :
+  roc.test() of two ROC curves with AUC == 1 has always p.value = 1 and can be misleading.
+6: In roc.test.roc(roc_combined, roc_agnostic, alternative = "greater") :
+  roc.test() of two ROC curves with AUC == 1 has always p.value = 1 and can be misleading.
+7: In roc.test.roc(roc_combined, roc_agnostic, alternative = "greater") :
+  roc.test() of two ROC curves with AUC == 1 has always p.value = 1 and can be misleading.
+8: In roc.test.roc(roc_combined, roc_agnostic, alternative = "greater") :
+  roc.test() of two ROC curves with AUC == 1 has always p.value = 1 and can be misleading.
+> 
+> df = data.frame(hla_name = hlas[high_ids+1], 
++                 auc_combined = auc_combined, 
++                 auc_agnostic = auc_agnostic, 
++                 DeLong_pvalue = DeLong_pvalues)
+>                 
+> df_table = read.csv("../result_tables/full_table.csv", header=TRUE)
+> 
+> df_table_matched = df_table[match(df$hla_name, df_table$HLA), ]
+> 
+> stopifnot(all(df$hla_name==df_table_matched$HLA))
+> 
+> min(df_table_matched$HLA_frequency)
+[1] 87
+> 
+> summary(df$auc_combined - df_table_matched$combined_AUC)
+      Min.    1st Qu.     Median       Mean    3rd Qu.       Max. 
+-4.441e-16  0.000e+00  0.000e+00  8.635e-17  3.331e-16  5.551e-16 
+> summary(df$auc_agnostic - df_table_matched$agnostic_AUC)
+      Min.    1st Qu.     Median       Mean    3rd Qu.       Max. 
+-4.441e-16 -1.110e-16  0.000e+00  4.112e-17  2.220e-16  5.551e-16 
+> 
+> write.csv(df, 
++           file = "results/pROC_roc_test_results.csv", 
++           row.names=FALSE)
+> 
+> 
+> sessionInfo()
+R version 4.4.0 (2024-04-24)
+Platform: x86_64-pc-linux-gnu
+Running under: Ubuntu 18.04.6 LTS
+
+Matrix products: default
+BLAS/LAPACK: FlexiBLAS OPENBLAS;  LAPACK version 3.11.0
+
+locale:
+ [1] LC_CTYPE=en_US.UTF-8       LC_NUMERIC=C              
+ [3] LC_TIME=en_US.UTF-8        LC_COLLATE=en_US.UTF-8    
+ [5] LC_MONETARY=en_US.UTF-8    LC_MESSAGES=en_US.UTF-8   
+ [7] LC_PAPER=en_US.UTF-8       LC_NAME=C                 
+ [9] LC_ADDRESS=C               LC_TELEPHONE=C            
+[11] LC_MEASUREMENT=en_US.UTF-8 LC_IDENTIFICATION=C       
+
+time zone: America/Los_Angeles
+tzcode source: system (glibc)
+
+attached base packages:
+[1] stats     graphics  grDevices utils     datasets  methods   base     
+
+other attached packages:
+[1] pROC_1.18.5
+
+loaded via a namespace (and not attached):
+[1] compiler_4.4.0 plyr_1.8.9     Rcpp_1.0.14   
+> q(save = "no")
+> proc.time()
+   user  system elapsed 
+  0.539   0.357   1.528 

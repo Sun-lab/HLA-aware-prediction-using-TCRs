@@ -21,7 +21,7 @@ p1 = ggplot(df1, aes(x = specific_AUC, y = combined_AUC, size = size_category, c
   geom_point(alpha = 0.6, show.legend = T) +
   scale_size_manual(
     name = "Freq",
-    values = c("<=70" = 2, ">70" = 3),  # adjust sizes as needed
+    values = c("<=70" = 1, ">70" = 2),  # adjust sizes as needed
     labels = c("<=70", ">70")
   ) +
   geom_abline(intercept = 0, slope = 1, linetype = "dashed", color = "blue") + 
@@ -31,7 +31,8 @@ p1 = ggplot(df1, aes(x = specific_AUC, y = combined_AUC, size = size_category, c
   xlab("HLA-specific AUC") + 
   ylab("Combined AUC") + 
   xlim(0.38, 1.02) + 
-  ylim(0.7, 1.02) +
+#  ylim(0.7, 1.02) +
+  ylim(0.38, 1.02) + 
   theme_minimal()+
   theme(plot.title = element_text(hjust = 0.5, size = 14),
         # axis.title.x = element_blank(),
@@ -47,7 +48,7 @@ p2 = ggplot(df1, aes(x = agnostic_AUC, y = combined_AUC, size = size_category, c
   geom_point(alpha = 0.6, show.legend = T) +
   scale_size_manual(
     name = "Freq",
-    values = c("<=70" = 2, ">70" = 3),  # adjust sizes as needed
+    values = c("<=70" = 1, ">70" = 2),  # adjust sizes as needed
     labels = c("<=70", ">70")
   ) +
   #geom_text_repel(data=subset(df1, abs(combined_AUC - agnostic_AUC)>0.03 ), size = 1.5, vjust = 1, show.legend = FALSE) +  # Use ggrepel for better label placement
@@ -74,7 +75,7 @@ p3 = ggplot(df2, aes(x = specific_AUC, y = combined_AUC, size = size_category, c
   geom_point(alpha = 0.6, show.legend = T) +
   scale_size_manual(
     name = "Freq",
-    values = c("<=70" = 2, ">70" = 3),  # adjust sizes as needed
+    values = c("<=70" = 1, ">70" = 2),  # adjust sizes as needed
     labels = c("<=70", ">70")
   ) +
   geom_abline(intercept = 0, slope = 1, linetype = "dashed", color = "blue") +  
@@ -84,7 +85,8 @@ p3 = ggplot(df2, aes(x = specific_AUC, y = combined_AUC, size = size_category, c
   xlab("HLA-specific AUC") + 
   ylab("Combined AUC") + 
   xlim(0.38, 1.02) + 
-  ylim(0.7, 1.02) +
+#  ylim(0.7, 1.02) +
+  ylim(0.38, 1.02) +
   theme_minimal()+
   theme(plot.title = element_text(hjust = 0.5, size = 14),
         # axis.title.x = element_blank(),
@@ -101,7 +103,7 @@ p4 = ggplot(df2, aes(x = agnostic_AUC, y = combined_AUC, size = size_category, c
   geom_point(alpha = 0.6, show.legend = T) +
   scale_size_manual(
     name = "Freq",
-    values = c("<=70" = 2, ">70" = 3),  # adjust sizes as needed
+    values = c("<=70" = 1, ">70" = 2),  # adjust sizes as needed
     labels = c("<=70", ">70")
   ) +
   # geom_text_repel(data=subset(df2, abs(combined_AUC - agnostic_AUC)>0.03), size = 1, vjust = -1, show.legend = FALSE) +  # Use ggrepel for better label placement
