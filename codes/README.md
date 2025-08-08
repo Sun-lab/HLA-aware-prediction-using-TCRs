@@ -1,46 +1,64 @@
 
+## HLA agnostic model
 
-HLA_agnostic_model
+Run HLA agnostic model for each HLA from one training/test split:
 
-	HLA agnostic model
+	HLA_agnostic_model
 
-HLA_agnostic_model_split
+For the HLAs with frequency in [40, 70], get predictions based on HLA agnostic models run on 10 training/test splits
 
-	For the HLAs with frequency in [40, 70], get predictions based on HLA agnostic models run on 10 training/test splits
+	HLA_agnostic_model_split
 
-HLA_specific_model_HLA_I
-HLA_specific_model_HLA_II
-HLA_specific_model_split
+## HLA specific model
 
-	HLA specific model, for HLA-I alleles, HLA-II alleles, and the HLAs with frequency in [40, 70]
-	Also part of code files related to permutation tests and pvalues between TCR and HLA related to revision
+For HLA-I alleles, HLA-II alleles, and the HLAs with frequency in [40, 70]. 
 
-combined_HLA_model
-combined_HLA_model_split
+Also part of code files related to permutation tests and pvalues between TCR and HLA related to revision
 
-	combined HLA model, for all HLAs, and the HLAs with frequency in [40, 70]
+	HLA_specific_model_HLA_I
+	HLA_specific_model_HLA_II
+	HLA_specific_model_split
 
-weighted_HLA_I
-weighted_HLA_II
-weighted_HLA_split
+## combined model
 
-	KNN model, for HLA-I alleles, HLA-II alleles, and the HLAs with frequency in [40, 70]
+combined HLA model, for all HLAs, and the HLAs with frequency in [40, 70]
 
-HLA_CMV_association
+	combined_HLA_model
+	combined_HLA_model_split
 
-	Association between HLA and CMV
+## KNN model
 
-code_for_data
+for HLA-I alleles, HLA-II alleles, and the HLAs with frequency in [40, 70]
 
-	Code files to generate the intermediate data files for running models
+	weighted_HLA_I
+	weighted_HLA_II
+	weighted_HLA_split
 
-code_for_tables
+## HLA CMV association
 
-	Code files to generate tables
+Association between HLA and CMV
 
-code_for_revision
+	HLA_CMV_association
 
-	Code files related to revision
+## Code for data
+
+Code files to generate the intermediate data files for running models
+
+	code_for_data
+
+## Code for tables
+
+Code files to generate tables
+
+	code_for_tables
+
+## Code for revision
+
+Code files related to certain discussions in revision
+
+	code_for_revision
+
+	
 
 
 
